@@ -1232,16 +1232,16 @@ function openWorkoutScreen(progId,dayIdx,day){
 function updateWorkoutUI(){
   const ex=wkState.exercises[wkState.currentEx];if(!ex)return;
   document.getElementById('wk-counter').textContent=`${wkState.currentEx+1}/${wkState.exercises.length}`;
-  // GIF
   const gif=ex.gif||findGif(ex.name);
   const imgEl=document.getElementById('wk-gif');
   const fallEl=document.getElementById('wk-gif-fallback');
-  if(gif&&imgEl.src!==gif){
-    imgEl.src=gif;
+  if(gif){
+    imgEl.setAttribute('src',gif);
     imgEl.style.display='block';
     fallEl.style.display='none';
-  } else if(!gif){
-    imgEl.src='';imgEl.style.display='none';fallEl.style.display='flex';
+  } else {
+    imgEl.style.display='none';
+    fallEl.style.display='flex';
   }
   document.getElementById('wk-ex-name').textContent=ex.name;
   document.getElementById('wk-sets-info').textContent=`السيت ${wkState.currentSet} من ${ex.sets} · ${ex.reps} تكرار`;
