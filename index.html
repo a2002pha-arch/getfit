@@ -1,0 +1,1576 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>حاسبة السعرات</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;700;800;900&family=Cairo:wght@400;600;700&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#0a0a0f;--surface:#12121a;--card:#1a1a26;--border:#2a2a3a;
+  --accent:#6c63ff;--accent2:#ff6584;--green:#00d4aa;--orange:#ff9f43;
+  --text:#e8e8f0;--muted:#6b6b8a;--white:#ffffff;
+  --cal-color:#6c63ff;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'Cairo',sans-serif;min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 20% 20%,rgba(108,99,255,.08) 0%,transparent 60%),radial-gradient(ellipse at 80% 80%,rgba(255,101,132,.06) 0%,transparent 60%);pointer-events:none;z-index:0;}
+
+/* NAV */
+.nav{position:sticky;top:0;z-index:100;background:rgba(10,10,15,.9);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);display:flex;justify-content:center;gap:4px;padding:10px 14px;flex-wrap:wrap;}
+.nav-btn{padding:8px 16px;border-radius:99px;border:1.5px solid var(--border);background:transparent;color:var(--muted);font-family:'Cairo',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;}
+.nav-btn:hover{border-color:var(--accent);color:var(--accent);}
+.nav-btn.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+
+/* PAGES */
+.page{display:none;padding:24px 14px 80px;position:relative;z-index:1;max-width:680px;margin:0 auto;}
+.page.active{display:block;}
+
+/* SETUP PAGE */
+.setup-hero{text-align:center;padding:30px 0 24px;}
+.setup-hero .emoji{font-size:64px;margin-bottom:12px;display:block;}
+.setup-hero h1{font-family:'Tajawal',sans-serif;font-weight:900;font-size:clamp(24px,5vw,38px);background:linear-gradient(135deg,var(--white),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:8px;}
+.setup-hero p{color:var(--muted);font-size:14px;}
+
+.setup-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:20px;margin-bottom:16px;}
+.setup-card h3{font-size:14px;font-weight:700;color:var(--accent);margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+.form-field{display:flex;flex-direction:column;gap:6px;}
+.form-field.full{grid-column:1/-1;}
+.form-field label{font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.5px;}
+.form-field input,.form-field select{background:var(--card);border:1.5px solid var(--border);border-radius:10px;color:var(--text);font-family:'Cairo',sans-serif;font-size:14px;padding:10px 13px;outline:none;transition:border-color .2s;}
+.form-field input:focus,.form-field select:focus{border-color:var(--accent);}
+.form-field select option{background:var(--card);}
+.activity-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;}
+.activity-btn{padding:10px 8px;border-radius:12px;border:1.5px solid var(--border);background:var(--card);color:var(--muted);font-family:'Cairo',sans-serif;font-size:11px;font-weight:700;cursor:pointer;transition:all .2s;text-align:center;}
+.activity-btn:hover{border-color:var(--accent);color:var(--accent);}
+.activity-btn.sel{border-color:var(--accent);background:rgba(108,99,255,.15);color:var(--accent);}
+.calc-btn{width:100%;padding:14px;border-radius:14px;border:none;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-family:'Cairo',sans-serif;font-size:15px;font-weight:800;cursor:pointer;transition:transform .15s,opacity .2s;margin-top:8px;}
+.calc-btn:hover{transform:translateY(-1px);opacity:.9;}
+.result-box{background:linear-gradient(135deg,rgba(108,99,255,.15),rgba(255,101,132,.1));border:1px solid rgba(108,99,255,.3);border-radius:16px;padding:20px;margin-top:16px;text-align:center;display:none;}
+.result-box.show{display:block;}
+.result-cals{font-family:'Tajawal',sans-serif;font-size:48px;font-weight:900;color:var(--accent);line-height:1;}
+.result-label{font-size:13px;color:var(--muted);margin-top:4px;}
+.result-breakdown{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:16px;}
+.rb-item{background:var(--card);border-radius:10px;padding:10px;text-align:center;}
+.rb-val{font-family:'Tajawal',sans-serif;font-size:18px;font-weight:800;}
+.rb-lbl{font-size:10px;color:var(--muted);margin-top:2px;}
+.save-setup-btn{width:100%;padding:13px;border-radius:14px;border:none;background:linear-gradient(135deg,var(--green),#00b894);color:#fff;font-family:'Cairo',sans-serif;font-size:14px;font-weight:800;cursor:pointer;margin-top:12px;transition:opacity .2s;}
+.save-setup-btn:hover{opacity:.9;}
+
+/* TODAY PAGE */
+.today-header{margin-bottom:20px;}
+.today-date{font-size:12px;color:var(--muted);margin-bottom:4px;}
+.today-title{font-family:'Tajawal',sans-serif;font-size:22px;font-weight:800;color:var(--white);}
+
+/* Calorie ring */
+.cal-ring-wrap{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:20px;margin-bottom:16px;display:flex;align-items:center;gap:20px;flex-wrap:wrap;}
+.cal-ring{position:relative;width:120px;height:120px;flex-shrink:0;}
+.cal-ring svg{transform:rotate(-90deg);width:100%;height:100%);}
+.cal-ring .ring-track{fill:none;stroke:var(--border);stroke-width:10;}
+.cal-ring .ring-fill{fill:none;stroke:url(#calGrad);stroke-width:10;stroke-linecap:round;transition:stroke-dashoffset .8s cubic-bezier(.4,0,.2,1);}
+.cal-ring .ring-text{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.ring-remaining{font-family:'Tajawal',sans-serif;font-size:20px;font-weight:900;color:var(--white);line-height:1;}
+.ring-label{font-size:9px;color:var(--muted);margin-top:2px;}
+.cal-stats{flex:1;min-width:120px;}
+.cal-stat-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);}
+.cal-stat-row:last-child{border-bottom:none;}
+.cal-stat-name{font-size:12px;color:var(--muted);}
+.cal-stat-val{font-family:'Tajawal',sans-serif;font-size:16px;font-weight:800;}
+.cal-stat-val.goal{color:var(--accent);}
+.cal-stat-val.eaten{color:var(--green);}
+.cal-stat-val.remaining{color:var(--orange);}
+.cal-stat-val.burned{color:var(--accent2);}
+
+/* Meals list */
+.meals-section{margin-bottom:16px;}
+.meals-section h3{font-size:13px;font-weight:700;color:var(--muted);margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;}
+.meal-item{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;animation:fadeIn .2s ease;}
+.meal-icon{font-size:24px;flex-shrink:0;}
+.meal-info{flex:1;}
+.meal-name{font-size:13px;font-weight:700;color:var(--white);}
+.meal-time{font-size:10px;color:var(--muted);margin-top:2px;}
+.meal-cals{font-family:'Tajawal',sans-serif;font-size:16px;font-weight:800;color:var(--accent);flex-shrink:0;}
+.meal-del{background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:4px;transition:color .15s;}
+.meal-del:hover{color:var(--accent2);}
+.empty-meals{text-align:center;padding:30px 20px;color:var(--muted);font-size:13px;}
+.empty-meals .em-icon{font-size:36px;margin-bottom:8px;}
+
+/* Add meal button */
+.add-meal-btn{width:100%;padding:13px;border-radius:14px;border:1.5px dashed var(--border);background:transparent;color:var(--muted);font-family:'Cairo',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:7px;}
+.add-meal-btn:hover{border-color:var(--accent);color:var(--accent);}
+
+/* Macros bar */
+.macros-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:16px;}
+.macros-card h3{font-size:13px;font-weight:700;color:var(--muted);margin-bottom:12px;}
+.macro-row{margin-bottom:10px;}
+.macro-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;}
+.macro-name{font-size:12px;font-weight:600;}
+.macro-val{font-size:11px;color:var(--muted);}
+.macro-bar-bg{height:6px;background:var(--border);border-radius:99px;overflow:hidden;}
+.macro-bar{height:100%;border-radius:99px;transition:width .6s cubic-bezier(.4,0,.2,1);}
+
+/* FOOD DB PAGE */
+.food-search{position:relative;margin-bottom:16px;}
+.food-search input{width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:14px;color:var(--text);font-family:'Cairo',sans-serif;font-size:14px;padding:12px 42px 12px 16px;outline:none;transition:border-color .2s;}
+.food-search input:focus{border-color:var(--accent);}
+.food-search .search-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:16px;}
+.food-category{margin-bottom:20px;}
+.food-category h3{font-size:12px;font-weight:700;color:var(--accent);letter-spacing:2px;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border);}
+.food-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;}
+.food-card{background:var(--surface);border:1.5px solid var(--border);border-radius:14px;padding:12px;cursor:pointer;transition:all .2s;}
+.food-card:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 6px 20px rgba(108,99,255,.15);}
+.food-card.selected{border-color:var(--green);background:rgba(0,212,170,.08);}
+.food-emoji{font-size:28px;margin-bottom:6px;}
+.food-name{font-size:12px;font-weight:700;color:var(--white);margin-bottom:2px;}
+.food-cals-badge{font-family:'Tajawal',sans-serif;font-size:14px;font-weight:800;color:var(--accent);}
+.food-per{font-size:10px;color:var(--muted);}
+.custom-food-add{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:16px;}
+.custom-food-add h3{font-size:13px;font-weight:700;color:var(--muted);margin-bottom:12px;}
+.custom-row{display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px;align-items:end;}
+.add-food-btn{padding:10px;border-radius:10px;border:none;background:var(--accent);color:#fff;font-family:'Cairo',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:opacity .2s;}
+.add-food-btn:hover{opacity:.85;}
+
+/* HISTORY PAGE */
+.history-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px;}
+.hs-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px;text-align:center;}
+.hs-val{font-family:'Tajawal',sans-serif;font-size:22px;font-weight:900;color:var(--accent);}
+.hs-lbl{font-size:10px;color:var(--muted);margin-top:3px;}
+.history-list{display:flex;flex-direction:column;gap:10px;}
+.history-item{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px;display:flex;align-items:center;gap:14px;}
+.hi-date{font-size:11px;color:var(--muted);flex-shrink:0;min-width:55px;text-align:center;}
+.hi-date .day{font-family:'Tajawal',sans-serif;font-size:20px;font-weight:800;color:var(--white);display:block;}
+.hi-bar-wrap{flex:1;}
+.hi-title{font-size:12px;font-weight:700;color:var(--white);margin-bottom:5px;}
+.hi-bar-bg{height:8px;background:var(--border);border-radius:99px;overflow:hidden;}
+.hi-bar{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .6s;}
+.hi-cals{font-family:'Tajawal',sans-serif;font-size:16px;font-weight:800;flex-shrink:0;text-align:left;}
+.hi-status{font-size:10px;margin-top:2px;}
+
+/* MODAL */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.85);backdrop-filter:blur(8px);z-index:200;display:flex;align-items:flex-end;justify-content:center;padding:16px;}
+.modal-bg.hidden{display:none;}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:24px 24px 16px 16px;padding:24px;width:100%;max-width:480px;max-height:85vh;overflow-y:auto;}
+.modal h3{font-size:16px;font-weight:700;color:var(--white);margin-bottom:16px;}
+.modal-search{margin-bottom:14px;}
+.modal-search input{width:100%;background:var(--card);border:1.5px solid var(--border);border-radius:10px;color:var(--text);font-family:'Cairo',sans-serif;font-size:13px;padding:10px 12px;outline:none;}
+.modal-search input:focus{border-color:var(--accent);}
+.modal-food-list{display:flex;flex-direction:column;gap:7px;margin-bottom:14px;max-height:280px;overflow-y:auto;}
+.modal-food-item{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--card);border:1.5px solid var(--border);border-radius:10px;cursor:pointer;transition:all .15s;}
+.modal-food-item:hover,.modal-food-item.sel{border-color:var(--accent);background:rgba(108,99,255,.1);}
+.mfi-emoji{font-size:20px;flex-shrink:0;}
+.mfi-name{flex:1;font-size:13px;font-weight:600;}
+.mfi-cals{font-family:'Tajawal',sans-serif;font-size:14px;font-weight:800;color:var(--accent);}
+.qty-row{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+.qty-row label{font-size:12px;color:var(--muted);font-weight:600;white-space:nowrap;}
+.qty-input{flex:1;background:var(--card);border:1.5px solid var(--border);border-radius:10px;color:var(--text);font-family:'Cairo',sans-serif;font-size:14px;padding:9px 12px;outline:none;text-align:center;}
+.qty-input:focus{border-color:var(--accent);}
+.meal-time-select{width:100%;background:var(--card);border:1.5px solid var(--border);border-radius:10px;color:var(--text);font-family:'Cairo',sans-serif;font-size:13px;padding:9px 12px;outline:none;margin-bottom:14px;}
+.modal-btns{display:flex;gap:10px;}
+.modal-add{flex:1;padding:12px;border-radius:12px;border:none;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-family:'Cairo',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:opacity .2s;}
+.modal-add:hover{opacity:.85;}
+.modal-cancel{padding:12px 16px;border-radius:12px;border:1.5px solid var(--border);background:transparent;color:var(--muted);font-family:'Cairo',sans-serif;font-size:13px;cursor:pointer;}
+
+/* ══ EXERCISES ══ */
+.muscle-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;}
+.muscle-tab{padding:8px 16px;border-radius:99px;border:1.5px solid var(--border);background:var(--surface);color:var(--muted);font-family:'Cairo',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:5px;}
+.muscle-tab:hover{border-color:var(--accent);color:var(--accent);}
+.muscle-tab.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+.home-badge{background:rgba(0,212,170,.15);border:1px solid rgba(0,212,170,.3);color:var(--green);font-size:9px;padding:2px 6px;border-radius:99px;font-weight:700;}
+.exercises-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;}
+.ex-card{background:var(--surface);border:1.5px solid var(--border);border-radius:18px;overflow:hidden;transition:all .25s;cursor:pointer;}
+.ex-card:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 8px 28px rgba(108,99,255,.15);}
+.ex-img{width:100%;height:180px;object-fit:cover;background:var(--card);display:block;}
+.ex-img-placeholder{width:100%;height:180px;background:linear-gradient(135deg,var(--card),var(--surface));display:flex;align-items:center;justify-content:center;font-size:48px;}
+.ex-body{padding:14px;}
+.ex-name{font-size:14px;font-weight:700;color:var(--white);margin-bottom:6px;}
+.ex-tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;}
+.ex-tag{font-size:10px;padding:3px 8px;border-radius:99px;font-weight:700;}
+.ex-tag.muscle{background:rgba(108,99,255,.15);color:var(--accent);border:1px solid rgba(108,99,255,.3);}
+.ex-tag.equip{background:rgba(255,159,67,.15);color:var(--orange);border:1px solid rgba(255,159,67,.3);}
+.ex-tag.home{background:rgba(0,212,170,.15);color:var(--green);border:1px solid rgba(0,212,170,.3);}
+.ex-tag.level{background:rgba(255,101,132,.15);color:var(--accent2);border:1px solid rgba(255,101,132,.3);}
+.ex-desc{font-size:11px;color:var(--muted);line-height:1.6;}
+.ex-sets{display:flex;gap:10px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);}
+.ex-set-item{text-align:center;flex:1;}
+.ex-set-val{font-family:'Tajawal',sans-serif;font-size:16px;font-weight:800;color:var(--accent);}
+.ex-set-lbl{font-size:10px;color:var(--muted);}
+.muscle-section{margin-bottom:10px;}
+.muscle-header{display:flex;align-items:center;gap:10px;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--border);}
+.muscle-icon{font-size:28px;}
+.muscle-title{font-family:'Tajawal',sans-serif;font-size:20px;font-weight:800;color:var(--white);}
+.muscle-count{font-size:11px;color:var(--muted);background:var(--card);padding:3px 10px;border-radius:99px;border:1px solid var(--border);}
+bottom:24px;left:50%;transform:translateX(-50%) translateY(60px);background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-weight:700;padding:10px 22px;border-radius:99px;font-size:13px;transition:transform .3s,opacity .3s;opacity:0;pointer-events:none;z-index:999;}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
+.toast.ok{background:linear-gradient(135deg,var(--green),#00b894);}
+.toast.err{background:linear-gradient(135deg,#e74c3c,#c0392b);}
+/* ══ EXERCISES ══ */
+.muscle-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;}
+.muscle-tab{padding:8px 16px;border-radius:99px;border:1.5px solid var(--border);background:var(--surface);color:var(--muted);font-family:'Cairo',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;}
+.muscle-tab:hover{border-color:var(--accent);color:var(--accent);}
+.muscle-tab.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+.home-badge{background:rgba(0,212,170,.15);border:1px solid rgba(0,212,170,.3);color:var(--green);font-size:9px;padding:2px 6px;border-radius:99px;font-weight:700;}
+.exercises-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;}
+.ex-card{background:var(--surface);border:1.5px solid var(--border);border-radius:18px;overflow:hidden;transition:all .25s;}
+.ex-card:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 8px 28px rgba(108,99,255,.15);}
+.ex-img{width:100%;height:180px;object-fit:cover;background:var(--card);display:block;}
+.ex-img-placeholder{width:100%;height:180px;background:linear-gradient(135deg,var(--card),var(--surface));display:flex;align-items:center;justify-content:center;font-size:48px;}
+.ex-body{padding:14px;}
+.ex-name{font-size:14px;font-weight:700;color:var(--white);margin-bottom:6px;}
+.ex-tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;}
+.ex-tag{font-size:10px;padding:3px 8px;border-radius:99px;font-weight:700;}
+.ex-tag.muscle{background:rgba(108,99,255,.15);color:var(--accent);border:1px solid rgba(108,99,255,.3);}
+.ex-tag.equip{background:rgba(255,159,67,.15);color:var(--orange);border:1px solid rgba(255,159,67,.3);}
+.ex-tag.home{background:rgba(0,212,170,.15);color:var(--green);border:1px solid rgba(0,212,170,.3);}
+.ex-tag.level{background:rgba(255,101,132,.15);color:var(--accent2);border:1px solid rgba(255,101,132,.3);}
+.ex-desc{font-size:11px;color:var(--muted);line-height:1.6;}
+.ex-sets{display:flex;gap:10px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);}
+.ex-set-item{text-align:center;flex:1;}
+.ex-set-val{font-family:'Tajawal',sans-serif;font-size:16px;font-weight:800;color:var(--accent);}
+.ex-set-lbl{font-size:10px;color:var(--muted);}
+.muscle-header{display:flex;align-items:center;gap:10px;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--border);flex-wrap:wrap;}
+.muscle-icon{font-size:28px;}.muscle-title{font-family:'Tajawal',sans-serif;font-size:20px;font-weight:800;color:var(--white);}
+.muscle-count{font-size:11px;color:var(--muted);background:var(--card);padding:3px 10px;border-radius:99px;border:1px solid var(--border);}
+
+/* ══ PROGRAMS ══ */
+.programs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-bottom:24px;}
+.program-card{background:var(--surface);border:1.5px solid var(--border);border-radius:20px;overflow:hidden;cursor:pointer;transition:all .25s;}
+.program-card:hover{transform:translateY(-3px);box-shadow:0 10px 30px rgba(108,99,255,.2);}
+.program-card.active-prog{border-color:var(--accent);box-shadow:0 0 0 2px rgba(108,99,255,.3);}
+.prog-header{padding:18px;background:linear-gradient(135deg,var(--card),var(--surface));}
+.prog-icon{font-size:36px;margin-bottom:8px;}
+.prog-name{font-family:'Tajawal',sans-serif;font-size:18px;font-weight:800;color:var(--white);margin-bottom:4px;}
+.prog-desc{font-size:12px;color:var(--muted);line-height:1.5;}
+.prog-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;}
+.prog-tag{font-size:10px;padding:3px 9px;border-radius:99px;font-weight:700;background:rgba(108,99,255,.15);color:var(--accent);border:1px solid rgba(108,99,255,.3);}
+.prog-footer{padding:12px 18px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+.prog-weeks{font-size:11px;color:var(--muted);}
+.prog-start-btn{padding:7px 16px;border-radius:99px;border:none;background:var(--accent);color:#fff;font-family:'Cairo',sans-serif;font-size:11px;font-weight:700;cursor:pointer;}
+.prog-start-btn.started{background:var(--green);}
+.active-prog-wrap{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:20px;margin-bottom:20px;display:none;}
+.active-prog-wrap.show{display:block;}
+.apw-header{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
+.apw-icon{font-size:32px;}.apw-info{flex:1;}
+.apw-name{font-family:'Tajawal',sans-serif;font-size:18px;font-weight:800;color:var(--white);}
+.apw-week{font-size:12px;color:var(--accent);margin-top:2px;}
+.apw-progress{height:6px;background:var(--border);border-radius:99px;overflow:hidden;margin-bottom:16px;}
+.apw-progress-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--accent),var(--green));transition:width .5s;}
+.week-days{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;}
+.week-day{background:var(--card);border:1.5px solid var(--border);border-radius:12px;padding:8px 4px;text-align:center;cursor:pointer;transition:all .2s;}
+.week-day:hover{border-color:var(--accent);}
+.week-day.today-wd{border-color:var(--accent);background:rgba(108,99,255,.1);}
+.week-day.done-wd{border-color:var(--green);background:rgba(0,212,170,.1);}
+.week-day.rest-wd{opacity:.5;cursor:default;}
+.wd-name{font-size:9px;color:var(--muted);margin-bottom:3px;}
+.wd-icon{font-size:18px;}.wd-status{font-size:8px;margin-top:2px;color:var(--muted);}
+.workout-session{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:20px;display:none;margin-top:16px;}
+.workout-session.show{display:block;}
+.ws-header{display:flex;align-items:center;gap:12px;margin-bottom:18px;flex-wrap:wrap;}
+.ws-title{font-family:'Tajawal',sans-serif;font-size:18px;font-weight:800;color:var(--white);flex:1;}
+.ws-close{padding:7px 14px;border-radius:99px;border:1.5px solid var(--border);background:transparent;color:var(--muted);font-family:'Cairo',sans-serif;font-size:12px;cursor:pointer;}
+.ws-exercises{display:flex;flex-direction:column;gap:10px;margin-bottom:20px;}
+.ws-ex{background:var(--card);border:1.5px solid var(--border);border-radius:14px;padding:14px;display:flex;align-items:center;gap:12px;transition:all .2s;cursor:pointer;}
+.ws-ex.done-ex{border-color:var(--green);background:rgba(0,212,170,.08);}
+.ws-ex-num{width:28px;height:28px;border-radius:50%;background:var(--border);color:var(--muted);font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s;}
+.ws-ex.done-ex .ws-ex-num{background:var(--green);color:#fff;}
+.ws-ex-info{flex:1;}
+.ws-ex-name{font-size:13px;font-weight:700;color:var(--white);}
+.ws-ex-detail{font-size:11px;color:var(--muted);margin-top:2px;}
+.ws-finish-btn{width:100%;padding:14px;border-radius:14px;border:none;background:linear-gradient(135deg,var(--green),#00b894);color:#fff;font-family:'Cairo',sans-serif;font-size:15px;font-weight:800;cursor:pointer;}
+
+/* ══ PROGRESS ══ */
+.progress-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:20px;}
+.ps-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px;text-align:center;}
+.ps-val{font-family:'Tajawal',sans-serif;font-size:28px;font-weight:900;color:var(--accent);}
+.ps-lbl{font-size:11px;color:var(--muted);margin-top:4px;}
+.progress-calendar{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:16px;}
+.pc-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:12px;}
+.pc-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-bottom:6px;}
+.pc-day{aspect-ratio:1;border-radius:6px;background:var(--card);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--muted);}
+.pc-day.worked{background:linear-gradient(135deg,var(--accent),var(--green));border-color:transparent;color:#fff;font-weight:800;}
+.pc-day.today-cal{border-color:var(--orange);color:var(--orange);}
+.achievements{display:flex;flex-direction:column;gap:10px;}
+.achievement{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px;display:flex;align-items:center;gap:12px;}
+.achievement.unlocked{border-color:var(--orange);background:rgba(255,159,67,.06);}
+.ach-icon{font-size:28px;flex-shrink:0;}
+.ach-info{flex:1;}
+.ach-name{font-size:13px;font-weight:700;color:var(--white);}
+.ach-desc{font-size:11px;color:var(--muted);margin-top:2px;}
+.ach-badge{font-size:10px;padding:3px 9px;border-radius:99px;font-weight:700;}
+.ach-badge.unlocked{background:rgba(255,159,67,.2);color:var(--orange);border:1px solid rgba(255,159,67,.3);}
+.ach-badge.locked{background:var(--card);color:var(--muted);border:1px solid var(--border);}{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+
+/* Page header */
+.page-header{margin-bottom:22px;}
+.page-header .tag{font-size:10px;letter-spacing:4px;color:var(--accent);font-family:'Tajawal',sans-serif;margin-bottom:6px;}
+.page-header h2{font-family:'Tajawal',sans-serif;font-weight:800;font-size:22px;color:var(--white);}
+</style>
+</head>
+<body>
+
+<div class="nav">
+  <button class="nav-btn active" onclick="showPage('setup',this)">⚙️ الإعداد</button>
+  <button class="nav-btn" onclick="showPage('today',this)">🍽️ اليوم</button>
+  <button class="nav-btn" onclick="showPage('foods',this)">🥗 الأطعمة</button>
+  <button class="nav-btn" onclick="showPage('history',this)">📊 السجل</button>
+  <button class="nav-btn" onclick="showPage('programs',this)">💪 البرامج</button>
+  <button class="nav-btn" onclick="showPage('progress',this)">📊 تقدمي</button>
+</div>
+
+<!-- ══ SETUP ══ -->
+<div class="page active" id="page-setup">
+  <div class="setup-hero">
+    <span class="emoji">🔥</span>
+    <h1>حاسبة السعرات</h1>
+    <p>احسب احتياجك اليومي وتتبع وجباتك بسهولة</p>
+  </div>
+
+  <div class="setup-card">
+    <h3>👤 بياناتك الشخصية</h3>
+    <div class="form-row">
+      <div class="form-field">
+        <label>العمر (سنة)</label>
+        <input type="number" id="s-age" placeholder="25" min="10" max="100"/>
+      </div>
+      <div class="form-field">
+        <label>الجنس</label>
+        <select id="s-gender">
+          <option value="male">ذكر</option>
+          <option value="female">أنثى</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label>الطول (سم)</label>
+        <input type="number" id="s-height" placeholder="175" min="100" max="250"/>
+      </div>
+      <div class="form-field">
+        <label>الوزن الحالي (كجم)</label>
+        <input type="number" id="s-weight" placeholder="80" min="30" max="300" step="0.1"/>
+      </div>
+      <div class="form-field full">
+        <label>الوزن المستهدف (كجم)</label>
+        <input type="number" id="s-target" placeholder="70" min="30" max="300" step="0.1"/>
+      </div>
+    </div>
+  </div>
+
+  <div class="setup-card">
+    <h3>🏃 مستوى النشاط</h3>
+    <div class="activity-grid">
+      <button class="activity-btn" data-val="1.2" onclick="selActivity(this)">😴 خامل جداً<br/><span style="font-size:10px;opacity:.6">بدون رياضة</span></button>
+      <button class="activity-btn" data-val="1.375" onclick="selActivity(this)">🚶 خفيف<br/><span style="font-size:10px;opacity:.6">1-3 أيام/أسبوع</span></button>
+      <button class="activity-btn sel" data-val="1.55" onclick="selActivity(this)">🏋️ متوسط<br/><span style="font-size:10px;opacity:.6">3-5 أيام/أسبوع</span></button>
+      <button class="activity-btn" data-val="1.725" onclick="selActivity(this)">⚡ نشيط<br/><span style="font-size:10px;opacity:.6">6-7 أيام/أسبوع</span></button>
+    </div>
+  </div>
+
+  <button class="calc-btn" onclick="calcCalories()">🔥 احسب السعرات اليومية</button>
+
+  <div class="result-box" id="result-box">
+    <div style="font-size:12px;color:var(--muted);margin-bottom:6px">سعراتك اليومية الموصى بها</div>
+    <div class="result-cals" id="result-cals">—</div>
+    <div class="result-label">سعرة حرارية / يوم</div>
+    <div class="result-breakdown">
+      <div class="rb-item"><div class="rb-val" id="rb-protein" style="color:#6c63ff">—</div><div class="rb-lbl">بروتين (جم)</div></div>
+      <div class="rb-item"><div class="rb-val" id="rb-carbs" style="color:#ff9f43">—</div><div class="rb-lbl">كربوهيدرات (جم)</div></div>
+      <div class="rb-item"><div class="rb-val" id="rb-fat" style="color:#ff6584">—</div><div class="rb-lbl">دهون (جم)</div></div>
+    </div>
+    <button class="save-setup-btn" onclick="saveSetup()">✅ حفظ وابدأ التتبع</button>
+  </div>
+</div>
+
+<!-- ══ TODAY ══ -->
+<div class="page" id="page-today">
+  <div class="today-header">
+    <div class="today-date" id="today-date">—</div>
+    <div class="today-title">وجبات اليوم 🍽️</div>
+  </div>
+
+  <!-- Calorie Ring -->
+  <div class="cal-ring-wrap">
+    <div class="cal-ring">
+      <svg viewBox="0 0 120 120">
+        <defs>
+          <linearGradient id="calGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" style="stop-color:#6c63ff"/>
+            <stop offset="100%" style="stop-color:#ff6584"/>
+          </linearGradient>
+        </defs>
+        <circle class="ring-track" cx="60" cy="60" r="50"/>
+        <circle class="ring-fill" id="ring-fill" cx="60" cy="60" r="50" stroke-dasharray="314" stroke-dashoffset="314"/>
+      </svg>
+      <div class="ring-text">
+        <div class="ring-remaining" id="ring-remaining">—</div>
+        <div class="ring-label">متبقي</div>
+      </div>
+    </div>
+    <div class="cal-stats">
+      <div class="cal-stat-row">
+        <span class="cal-stat-name">الهدف</span>
+        <span class="cal-stat-val goal" id="stat-goal">—</span>
+      </div>
+      <div class="cal-stat-row">
+        <span class="cal-stat-name">مُستهلك</span>
+        <span class="cal-stat-val eaten" id="stat-eaten">0</span>
+      </div>
+      <div class="cal-stat-row">
+        <span class="cal-stat-name">متبقي</span>
+        <span class="cal-stat-val remaining" id="stat-remaining">—</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Macros -->
+  <div class="macros-card">
+    <h3>📊 الماكروز</h3>
+    <div class="macro-row">
+      <div class="macro-head"><span class="macro-name" style="color:#6c63ff">💪 بروتين</span><span class="macro-val" id="mac-protein">0 / — جم</span></div>
+      <div class="macro-bar-bg"><div class="macro-bar" id="mac-bar-protein" style="width:0%;background:#6c63ff"></div></div>
+    </div>
+    <div class="macro-row">
+      <div class="macro-head"><span class="macro-name" style="color:#ff9f43">🌾 كربوهيدرات</span><span class="macro-val" id="mac-carbs">0 / — جم</span></div>
+      <div class="macro-bar-bg"><div class="macro-bar" id="mac-bar-carbs" style="width:0%;background:#ff9f43"></div></div>
+    </div>
+    <div class="macro-row" style="margin-bottom:0">
+      <div class="macro-head"><span class="macro-name" style="color:#ff6584">🥑 دهون</span><span class="macro-val" id="mac-fat">0 / — جم</span></div>
+      <div class="macro-bar-bg"><div class="macro-bar" id="mac-bar-fat" style="width:0%;background:#ff6584"></div></div>
+    </div>
+  </div>
+
+  <!-- Meals -->
+  <div class="meals-section">
+    <h3>الوجبات المسجّلة <span id="meals-count" style="color:var(--accent)"></span></h3>
+    <div id="meals-list"></div>
+    <button class="add-meal-btn" onclick="openAddMeal()">➕ إضافة وجبة</button>
+  </div>
+</div>
+
+<!-- ══ FOODS ══ -->
+<div class="page" id="page-foods">
+  <div class="page-header">
+    <div class="tag">🥗 قاعدة البيانات</div>
+    <h2>الأطعمة والوجبات</h2>
+  </div>
+
+  <div class="food-search">
+    <input type="text" id="food-search-inp" placeholder="ابحث عن طعام..." oninput="renderFoodDB()"/>
+    <span class="search-icon">🔍</span>
+  </div>
+
+  <div class="custom-food-add">
+    <h3>➕ إضافة طعام مخصص</h3>
+    <div class="custom-row">
+      <div class="form-field"><label>اسم الطعام</label><input type="text" id="cf-name" placeholder="مثال: شاورما"/></div>
+      <div class="form-field"><label>السعرات</label><input type="number" id="cf-cals" placeholder="500" min="0"/></div>
+      <div class="form-field"><label>&nbsp;</label><button class="add-food-btn" onclick="addCustomFood()">إضافة</button></div>
+    </div>
+    <div class="form-row" style="margin-top:10px;margin-bottom:0">
+      <div class="form-field"><label>بروتين (جم)</label><input type="number" id="cf-protein" placeholder="0" min="0"/></div>
+      <div class="form-field"><label>كربوهيدرات (جم)</label><input type="number" id="cf-carbs" placeholder="0" min="0"/></div>
+      <div class="form-field"><label>دهون (جم)</label><input type="number" id="cf-fat" placeholder="0" min="0"/></div>
+    </div>
+  </div>
+
+  <div id="food-db-list"></div>
+</div>
+
+<!-- ══ HISTORY ══ -->
+<div class="page" id="page-history">
+  <div class="page-header">
+    <div class="tag">📊 السجل اليومي</div>
+    <h2>تاريخ وجباتك</h2>
+  </div>
+  <div class="history-stats">
+    <div class="hs-card"><div class="hs-val" id="hs-days">0</div><div class="hs-lbl">أيام مسجلة</div></div>
+    <div class="hs-card"><div class="hs-val" id="hs-avg">0</div><div class="hs-lbl">متوسط السعرات</div></div>
+    <div class="hs-card"><div class="hs-val" id="hs-streak">0</div><div class="hs-lbl">أيام متتالية</div></div>
+  </div>
+  <div class="history-list" id="history-list"></div>
+</div>
+
+<!-- Modal: Add Meal -->
+<div class="modal-bg hidden" id="meal-modal">
+  <div class="modal">
+    <h3>🍽️ إضافة وجبة</h3>
+    <div class="modal-search"><input type="text" id="modal-search" placeholder="ابحث عن طعام..." oninput="filterModalFoods()"/></div>
+    <div class="modal-food-list" id="modal-food-list"></div>
+    <div class="qty-row">
+      <label>الكمية:</label>
+      <input type="number" class="qty-input" id="meal-qty" value="1" min="0.1" step="0.1"/>
+      <span style="font-size:12px;color:var(--muted)">حصة</span>
+    </div>
+    <select class="meal-time-select" id="meal-time">
+      <option value="فطور">🌅 فطور</option>
+      <option value="غداء">☀️ غداء</option>
+      <option value="عشاء">🌙 عشاء</option>
+      <option value="وجبة خفيفة">🍎 وجبة خفيفة</option>
+    </select>
+    <div class="modal-btns">
+      <button class="modal-cancel" onclick="closeAddMeal()">إلغاء</button>
+      <button class="modal-add" onclick="addMeal()">إضافة ✅</button>
+    </div>
+  </div>
+</div>
+
+<div class="page" id="page-programs">
+  <div id="prog-list-view">
+    <div class="page-header"><div class="tag">💪 البرامج</div><h2>اختر برنامجك</h2><p>حدد مستواك وابدأ رحلتك</p></div>
+    <div class="programs-grid" id="programs-grid"></div>
+  </div>
+  <div id="prog-detail-view" style="display:none">
+    <button onclick="backToProgList()" style="display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border-radius:99px;border:1.5px solid var(--border);background:var(--surface);color:var(--muted);font-family:Cairo,sans-serif;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:20px;">← رجوع</button>
+    <div id="prog-detail-content"></div>
+  </div>
+</div>
+
+<div class="page" id="page-progress">
+  <div class="page-header"><div class="tag">📊 تقدمي</div><h2>تقدّمك الرياضي</h2></div>
+  <div class="progress-stats">
+    <div class="ps-card"><div class="ps-val" id="pr-total">0</div><div class="ps-lbl">إجمالي التمارين</div></div>
+    <div class="ps-card"><div class="ps-val" id="pr-streak">0</div><div class="ps-lbl">🔥 أيام متتالية</div></div>
+    <div class="ps-card"><div class="ps-val" id="pr-week">0</div><div class="ps-lbl">تمارين هذا الأسبوع</div></div>
+    <div class="ps-card"><div class="ps-val" id="pr-best">0</div><div class="ps-lbl">أفضل سلسلة</div></div>
+  </div>
+  <div class="progress-calendar">
+    <div class="pc-title">📅 سجل الأشهر الثلاثة الأخيرة</div>
+    <div class="pc-grid" id="pc-days-labels" style="margin-bottom:4px"></div>
+    <div class="pc-grid" id="pc-grid"></div>
+  </div>
+  <div class="page-header" style="margin-bottom:12px;margin-top:4px;"><div class="tag">🏅 الإنجازات</div><h2 style="font-size:18px">الإنجازات</h2></div>
+  <div class="achievements" id="achievements-list"></div>
+</div>
+
+<!-- WORKOUT SCREEN (fullscreen) -->
+<div id="workout-screen" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:300;overflow-y:auto;flex-direction:column;">
+  <!-- Header -->
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid var(--border);background:rgba(10,10,15,.95);backdrop-filter:blur(10px);position:sticky;top:0;z-index:10;">
+    <button onclick="exitWorkout()" style="padding:8px 16px;border-radius:99px;border:1.5px solid var(--border);background:transparent;color:var(--muted);font-family:Cairo,sans-serif;font-size:13px;cursor:pointer;">✕ إنهاء</button>
+    <div style="text-align:center;">
+      <div style="font-size:11px;color:var(--muted)" id="wk-prog-name">—</div>
+      <div style="font-size:13px;font-weight:700;color:var(--text)" id="wk-day-name">—</div>
+    </div>
+    <div style="font-size:12px;font-weight:700;color:var(--accent)" id="wk-counter">0/0</div>
+  </div>
+
+  <!-- Exercise display -->
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;padding:20px 16px 100px;max-width:500px;margin:0 auto;width:100%;">
+    <!-- GIF -->
+    <div style="width:100%;border-radius:20px;overflow:hidden;background:var(--surface);border:1px solid var(--border);margin-bottom:20px;aspect-ratio:1;display:flex;align-items:center;justify-content:center;position:relative;">
+      <img id="wk-gif" src="" alt="" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display='none';document.getElementById('wk-gif-fallback').style.display='flex'"/>
+      <div id="wk-gif-fallback" style="display:none;position:absolute;inset:0;align-items:center;justify-content:center;font-size:80px;">💪</div>
+    </div>
+
+    <!-- Exercise name & sets -->
+    <div style="text-align:center;margin-bottom:24px;width:100%;">
+      <div style="font-family:Tajawal,sans-serif;font-size:24px;font-weight:800;color:var(--white);margin-bottom:6px;" id="wk-ex-name">—</div>
+      <div style="font-size:14px;color:var(--muted);" id="wk-sets-info">—</div>
+    </div>
+
+    <!-- Timer circle -->
+    <div style="position:relative;width:160px;height:160px;margin-bottom:28px;">
+      <svg width="160" height="160" viewBox="0 0 160 160" style="transform:rotate(-90deg)">
+        <circle cx="80" cy="80" r="70" fill="none" stroke="var(--border)" stroke-width="10"/>
+        <circle id="wk-timer-ring" cx="80" cy="80" r="70" fill="none" stroke="url(#timerGrad)" stroke-width="10" stroke-linecap="round"
+          stroke-dasharray="439.8" stroke-dashoffset="0" style="transition:stroke-dashoffset .9s linear;"/>
+        <defs>
+          <linearGradient id="timerGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" style="stop-color:#6c63ff"/><stop offset="100%" style="stop-color:#ff6584"/>
+          </linearGradient>
+        </defs>
+      </svg>
+      <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+        <div style="font-family:Tajawal,sans-serif;font-size:44px;font-weight:900;color:var(--white);line-height:1;" id="wk-timer-num">45</div>
+        <div style="font-size:11px;color:var(--muted);">ثانية</div>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div style="display:flex;gap:14px;align-items:center;justify-content:center;margin-bottom:20px;">
+      <button onclick="prevExercise()" id="wk-prev-btn" style="padding:12px 22px;border-radius:99px;border:1.5px solid var(--border);background:var(--surface);color:var(--muted);font-size:13px;font-weight:700;cursor:pointer;font-family:Cairo,sans-serif;">← السابق</button>
+      <button onclick="toggleTimer()" id="wk-play-btn" style="width:70px;height:70px;border-radius:50%;border:none;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-size:28px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(108,99,255,.4);">▶</button>
+      <button onclick="nextExercise()" id="wk-next-btn" style="padding:12px 22px;border-radius:99px;border:1.5px solid var(--border);background:var(--surface);color:var(--muted);font-size:13px;font-weight:700;cursor:pointer;font-family:Cairo,sans-serif;">التالي →</button>
+    </div>
+
+    <!-- Rest indicator -->
+    <div id="wk-rest-banner" style="display:none;background:linear-gradient(135deg,rgba(0,212,170,.15),rgba(108,99,255,.1));border:1px solid rgba(0,212,170,.3);border-radius:14px;padding:12px 20px;text-align:center;margin-bottom:16px;width:100%;">
+      <div style="font-size:14px;font-weight:700;color:var(--green);">💤 وقت الراحة</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:3px;">استرح قبل التمرين التالي</div>
+    </div>
+
+    <!-- Exercise list mini -->
+    <div style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px;" id="wk-ex-list"></div>
+  </div>
+</div>
+
+<!-- Finish screen -->
+<div id="finish-screen" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:400;display:none;align-items:center;justify-content:center;text-align:center;padding:24px;flex-direction:column;">
+  <div style="font-size:80px;margin-bottom:16px;">🎉</div>
+  <div style="font-family:Tajawal,sans-serif;font-size:32px;font-weight:900;color:var(--white);margin-bottom:8px;">أحسنت!</div>
+  <div style="font-size:14px;color:var(--muted);margin-bottom:30px;" id="finish-stats">أتممت تمرين اليوم</div>
+  <div style="display:flex;gap:14px;flex-wrap:wrap;justify-content:center;margin-bottom:24px;">
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 24px;text-align:center;">
+      <div style="font-family:Tajawal,sans-serif;font-size:28px;font-weight:800;color:var(--accent)" id="fin-excount">0</div>
+      <div style="font-size:11px;color:var(--muted)">تمرين</div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 24px;text-align:center;">
+      <div style="font-family:Tajawal,sans-serif;font-size:28px;font-weight:800;color:var(--green)" id="fin-duration">0</div>
+      <div style="font-size:11px;color:var(--muted)">دقيقة</div>
+    </div>
+  </div>
+  <button onclick="closeFinish()" style="padding:14px 32px;border-radius:99px;border:none;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-family:Cairo,sans-serif;font-size:15px;font-weight:800;cursor:pointer;">العودة للبرامج 🏠</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+
+<script>
+// ══ STATE ══════════════════════════════════════════════
+const SK={
+  setup:'calTracker_setup',
+  foods:'calTracker_foods',
+  log:'calTracker_log',
+};
+let setup=JSON.parse(localStorage.getItem(SK.setup)||'null');
+let foodDB=JSON.parse(localStorage.getItem(SK.foods)||'null');
+let log=JSON.parse(localStorage.getItem(SK.log)||'{}');
+let selectedActivity=1.55;
+let selectedModalFood=null;
+
+// ══ DEFAULT FOODS ══════════════════════════════════════
+const DEFAULT_FOODS=[
+  // إفطار
+  {id:'f1',cat:'🌅 وجبات الإفطار',emoji:'🍳',name:'بيض مقلي (بيضتان)',cals:180,protein:12,carbs:1,fat:14},
+  {id:'f2',cat:'🌅 وجبات الإفطار',emoji:'🥛',name:'حليب (كوب 250مل)',cals:150,protein:8,carbs:12,fat:8},
+  {id:'f3',cat:'🌅 وجبات الإفطار',emoji:'🍞',name:'خبز تمر (رغيف)',cals:120,protein:3,carbs:25,fat:1},
+  {id:'f4',cat:'🌅 وجبات الإفطار',emoji:'🧀',name:'جبنة بيضاء (شريحة)',cals:80,protein:5,carbs:1,fat:6},
+  {id:'f5',cat:'🌅 وجبات الإفطار',emoji:'🫓',name:'فول مدمس (طبق)',cals:200,protein:12,carbs:28,fat:4},
+  // غداء وعشاء
+  {id:'f6',cat:'🍖 اللحوم والدجاج',emoji:'🍗',name:'دجاج مشوي (صدر)',cals:165,protein:31,carbs:0,fat:4},
+  {id:'f7',cat:'🍖 اللحوم والدجاج',emoji:'🥩',name:'لحم مفروم (100جم)',cals:250,protein:20,carbs:0,fat:18},
+  {id:'f8',cat:'🍖 اللحوم والدجاج',emoji:'🍖',name:'كباب (100جم)',cals:220,protein:18,carbs:3,fat:15},
+  {id:'f9',cat:'🍖 اللحوم والدجاج',emoji:'🫕',name:'مندي دجاج (طبق)',cals:550,protein:40,carbs:55,fat:16},
+  // أرز وكربوهيدرات
+  {id:'f10',cat:'🍚 الأرز والنشويات',emoji:'🍚',name:'أرز مطبوخ (كوب)',cals:200,protein:4,carbs:44,fat:0},
+  {id:'f11',cat:'🍚 الأرز والنشويات',emoji:'🍝',name:'مكرونة مطبوخة (كوب)',cals:220,protein:8,carbs:43,fat:2},
+  {id:'f12',cat:'🍚 الأرز والنشويات',emoji:'🫓',name:'خبز عربي (رغيف)',cals:165,protein:6,carbs:33,fat:1},
+  // مشروبات
+  {id:'f13',cat:'☕ المشروبات',emoji:'☕',name:'قهوة سادة',cals:5,protein:0,carbs:0,fat:0},
+  {id:'f14',cat:'☕ المشروبات',emoji:'🍵',name:'شاي بحليب',cals:60,protein:2,carbs:8,fat:2},
+  {id:'f15',cat:'☕ المشروبات',emoji:'🥤',name:'عصير برتقال (كوب)',cals:110,protein:2,carbs:26,fat:0},
+  {id:'f16',cat:'☕ المشروبات',emoji:'🧃',name:'عصير تفاح علبة',cals:120,protein:0,carbs:29,fat:0},
+  // وجبات خفيفة
+  {id:'f17',cat:'🍎 وجبات خفيفة',emoji:'🍌',name:'موزة',cals:90,protein:1,carbs:23,fat:0},
+  {id:'f18',cat:'🍎 وجبات خفيفة',emoji:'🍎',name:'تفاحة',cals:80,protein:0,carbs:21,fat:0},
+  {id:'f19',cat:'🍎 وجبات خفيفة',emoji:'🌰',name:'مكسرات مشكلة (30جم)',cals:180,protein:5,carbs:6,fat:16},
+  {id:'f20',cat:'🍎 وجبات خفيفة',emoji:'🍫',name:'شوكولاتة (قطعة30جم)',cals:160,protein:2,carbs:18,fat:9},
+  {id:'f21',cat:'🍎 وجبات خفيفة',emoji:'🍪',name:'بسكويت (3 قطع)',cals:150,protein:2,carbs:22,fat:6},
+  // مطاعم
+  {id:'f22',cat:'🍔 المطاعم والوجبات السريعة',emoji:'🍔',name:'برجر عادي',cals:490,protein:25,carbs:45,fat:22},
+  {id:'f23',cat:'🍔 المطاعم والوجبات السريعة',emoji:'🍕',name:'بيتزا (شريحة)',cals:285,protein:12,carbs:36,fat:10},
+  {id:'f24',cat:'🍔 المطاعم والوجبات السريعة',emoji:'🌮',name:'شاورما دجاج',cals:420,protein:28,carbs:38,fat:14},
+  {id:'f25',cat:'🍔 المطاعم والوجبات السريعة',emoji:'🍟',name:'بطاطس مقلية (وسط)',cals:340,protein:4,carbs:44,fat:16},
+];
+
+function initFoods(){
+  if(!foodDB){foodDB=JSON.parse(JSON.stringify(DEFAULT_FOODS));saveFood();}
+}
+function saveFood(){localStorage.setItem(SK.foods,JSON.stringify(foodDB));}
+function saveLog(){localStorage.setItem(SK.log,JSON.stringify(log));}
+function saveSetupData(){localStorage.setItem(SK.setup,JSON.stringify(setup));}
+
+// ══ HELPERS ════════════════════════════════════════════
+function todayKey(){return new Date().toISOString().split('T')[0];}
+function fmtDate(d){return new Date(d).toLocaleDateString('ar-SA',{weekday:'short',day:'numeric',month:'short'});}
+function nowTime(){return new Date().toLocaleTimeString('ar-SA',{hour:'2-digit',minute:'2-digit'});}
+
+// ══ SETUP ══════════════════════════════════════════════
+function selActivity(btn){
+  document.querySelectorAll('.activity-btn').forEach(b=>b.classList.remove('sel'));
+  btn.classList.add('sel');
+  selectedActivity=parseFloat(btn.dataset.val);
+}
+function calcCalories(){
+  const age=parseInt(document.getElementById('s-age').value);
+  const gender=document.getElementById('s-gender').value;
+  const height=parseFloat(document.getElementById('s-height').value);
+  const weight=parseFloat(document.getElementById('s-weight').value);
+  const target=parseFloat(document.getElementById('s-target').value);
+  if(!age||!height||!weight){toast('❌ عبّ كل البيانات','err');return;}
+  // Mifflin-St Jeor formula
+  let bmr;
+  if(gender==='male')bmr=10*weight+6.25*height-5*age+5;
+  else bmr=10*weight+6.25*height-5*age-161;
+  let tdee=Math.round(bmr*selectedActivity);
+  // Adjust for goal (lose: -500)
+  let goal=tdee-500;
+  if(target>weight)goal=tdee+300; // gain
+  goal=Math.max(1200,goal);
+  const protein=Math.round(weight*2);
+  const fat=Math.round(goal*0.25/9);
+  const carbs=Math.round((goal-protein*4-fat*9)/4);
+  document.getElementById('result-cals').textContent=goal;
+  document.getElementById('rb-protein').textContent=protein;
+  document.getElementById('rb-carbs').textContent=carbs;
+  document.getElementById('rb-fat').textContent=fat;
+  document.getElementById('result-box').classList.add('show');
+  document.getElementById('result-box').scrollIntoView({behavior:'smooth',block:'center'});
+  // Store temp
+  window._tempSetup={goal,protein,carbs,fat,weight,height,age,gender,target};
+}
+function saveSetup(){
+  if(!window._tempSetup){toast('❌ احسب السعرات أولاً','err');return;}
+  setup={...window._tempSetup,savedAt:new Date().toISOString()};
+  saveSetupData();
+  toast('✅ تم الحفظ! انتقل لصفحة اليوم','ok');
+  setTimeout(()=>{
+    document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.nav-btn')[1].classList.add('active');
+    showPage('today',document.querySelectorAll('.nav-btn')[1]);
+  },1200);
+}
+function loadSetupUI(){
+  if(!setup)return;
+  document.getElementById('s-age').value=setup.age||'';
+  document.getElementById('s-height').value=setup.height||'';
+  document.getElementById('s-weight').value=setup.weight||'';
+  document.getElementById('s-target').value=setup.target||'';
+  document.getElementById('s-gender').value=setup.gender||'male';
+  window._tempSetup=setup;
+  document.getElementById('result-cals').textContent=setup.goal;
+  document.getElementById('rb-protein').textContent=setup.protein;
+  document.getElementById('rb-carbs').textContent=setup.carbs;
+  document.getElementById('rb-fat').textContent=setup.fat;
+  document.getElementById('result-box').classList.add('show');
+}
+
+// ══ TODAY ═══════════════════════════════════════════════
+function renderToday(){
+  const key=todayKey();
+  const dayLog=log[key]||{meals:[]};
+  const goal=setup?setup.goal:2000;
+  const protein_goal=setup?setup.protein:150;
+  const carbs_goal=setup?setup.carbs:200;
+  const fat_goal=setup?setup.fat:60;
+  let eaten=0,protein=0,carbs=0,fat=0;
+  (dayLog.meals||[]).forEach(m=>{eaten+=m.cals;protein+=m.protein||0;carbs+=m.carbs||0;fat+=m.fat||0;});
+  const remaining=Math.max(0,goal-eaten);
+  const pct=Math.min(100,(eaten/goal)*100);
+  const C=2*Math.PI*50;
+  document.getElementById('ring-fill').style.strokeDashoffset=C-(pct/100)*C;
+  document.getElementById('ring-remaining').textContent=remaining;
+  document.getElementById('stat-goal').textContent=goal;
+  document.getElementById('stat-eaten').textContent=eaten;
+  document.getElementById('stat-remaining').textContent=remaining;
+  document.getElementById('today-date').textContent=fmtDate(key);
+  // Macros
+  document.getElementById('mac-protein').textContent=`${Math.round(protein)} / ${protein_goal} جم`;
+  document.getElementById('mac-carbs').textContent=`${Math.round(carbs)} / ${carbs_goal} جم`;
+  document.getElementById('mac-fat').textContent=`${Math.round(fat)} / ${fat_goal} جم`;
+  document.getElementById('mac-bar-protein').style.width=Math.min(100,(protein/protein_goal)*100)+'%';
+  document.getElementById('mac-bar-carbs').style.width=Math.min(100,(carbs/carbs_goal)*100)+'%';
+  document.getElementById('mac-bar-fat').style.width=Math.min(100,(fat/fat_goal)*100)+'%';
+  // Meals
+  const meals=dayLog.meals||[];
+  document.getElementById('meals-count').textContent=meals.length?`(${meals.length})`:'';
+  const list=document.getElementById('meals-list');
+  if(!meals.length){
+    list.innerHTML=`<div class="empty-meals"><div class="em-icon">🍽️</div>لم تسجل أي وجبة اليوم</div>`;
+    return;
+  }
+  list.innerHTML=meals.map((m,i)=>`<div class="meal-item"><span class="meal-icon">${m.emoji}</span><div class="meal-info"><div class="meal-name">${m.name}${m.qty>1?` ×${m.qty}`:''}</div><div class="meal-time">${m.mealTime} · ${m.time}</div></div><span class="meal-cals">${m.cals} ك</span><button class="meal-del" onclick="deleteMeal(${i})">🗑️</button></div>`).join('');
+}
+function deleteMeal(idx){
+  const key=todayKey();
+  if(!log[key])return;
+  log[key].meals.splice(idx,1);
+  saveLog();renderToday();renderHistory();
+  toast('🗑️ تم الحذف');
+}
+
+// ══ ADD MEAL MODAL ══════════════════════════════════════
+function openAddMeal(){
+  selectedModalFood=null;
+  document.getElementById('modal-search').value='';
+  document.getElementById('meal-qty').value=1;
+  filterModalFoods();
+  document.getElementById('meal-modal').classList.remove('hidden');
+}
+function closeAddMeal(){document.getElementById('meal-modal').classList.add('hidden');selectedModalFood=null;}
+function filterModalFoods(){
+  const q=(document.getElementById('modal-search').value||'').toLowerCase();
+  const list=document.getElementById('modal-food-list');
+  const filtered=foodDB.filter(f=>!q||f.name.toLowerCase().includes(q)||f.cat.toLowerCase().includes(q));
+  list.innerHTML=filtered.slice(0,20).map(f=>`<div class="modal-food-item ${selectedModalFood&&selectedModalFood.id===f.id?'sel':''}" onclick="selModalFood('${f.id}')"><span class="mfi-emoji">${f.emoji||'🍽️'}</span><span class="mfi-name">${f.name}</span><span class="mfi-cals">${f.cals} ك</span></div>`).join('');
+}
+function selModalFood(id){
+  selectedModalFood=foodDB.find(f=>f.id===id);
+  filterModalFoods();
+}
+function addMeal(){
+  if(!selectedModalFood){toast('❌ اختر طعاماً أولاً','err');return;}
+  const qty=parseFloat(document.getElementById('meal-qty').value)||1;
+  const mealTime=document.getElementById('meal-time').value;
+  const key=todayKey();
+  if(!log[key])log[key]={meals:[]};
+  log[key].meals.push({
+    id:'m_'+Date.now(),
+    name:selectedModalFood.name,
+    emoji:selectedModalFood.emoji||'🍽️',
+    cals:Math.round(selectedModalFood.cals*qty),
+    protein:Math.round((selectedModalFood.protein||0)*qty),
+    carbs:Math.round((selectedModalFood.carbs||0)*qty),
+    fat:Math.round((selectedModalFood.fat||0)*qty),
+    qty,mealTime,
+    time:nowTime(),
+  });
+  saveLog();closeAddMeal();renderToday();renderHistory();
+  toast(`✅ تمت إضافة ${selectedModalFood.name}`,'ok');
+}
+
+// ══ FOOD DB ═════════════════════════════════════════════
+function renderFoodDB(){
+  const q=(document.getElementById('food-search-inp').value||'').toLowerCase();
+  const cats={};
+  foodDB.filter(f=>!q||f.name.toLowerCase().includes(q)||f.cat.toLowerCase().includes(q)).forEach(f=>{
+    if(!cats[f.cat])cats[f.cat]=[];cats[f.cat].push(f);
+  });
+  const el=document.getElementById('food-db-list');
+  el.innerHTML=Object.entries(cats).map(([cat,foods])=>`<div class="food-category"><h3>${cat}</h3><div class="food-grid">${foods.map(f=>`<div class="food-card" onclick="quickAddFood('${f.id}')"><div class="food-emoji">${f.emoji||'🍽️'}</div><div class="food-name">${f.name}</div><div class="food-cals-badge">${f.cals}</div><div class="food-per">سعرة/حصة</div></div>`).join('')}</div></div>`).join('');
+}
+function quickAddFood(id){
+  selectedModalFood=foodDB.find(f=>f.id===id);
+  if(!selectedModalFood)return;
+  const key=todayKey();
+  if(!log[key])log[key]={meals:[]};
+  log[key].meals.push({
+    id:'m_'+Date.now(),
+    name:selectedModalFood.name,
+    emoji:selectedModalFood.emoji||'🍽️',
+    cals:selectedModalFood.cals,
+    protein:selectedModalFood.protein||0,
+    carbs:selectedModalFood.carbs||0,
+    fat:selectedModalFood.fat||0,
+    qty:1,mealTime:'وجبة خفيفة',
+    time:nowTime(),
+  });
+  saveLog();renderToday();renderHistory();
+  toast(`✅ أُضيف: ${selectedModalFood.name}`,'ok');
+}
+function addCustomFood(){
+  const name=document.getElementById('cf-name').value.trim();
+  const cals=parseInt(document.getElementById('cf-cals').value)||0;
+  if(!name||!cals){toast('❌ الاسم والسعرات مطلوبة','err');return;}
+  const protein=parseInt(document.getElementById('cf-protein').value)||0;
+  const carbs=parseInt(document.getElementById('cf-carbs').value)||0;
+  const fat=parseInt(document.getElementById('cf-fat').value)||0;
+  const emojis=['🍽️','🥘','🫕','🍱','🥗','🍜'];
+  foodDB.push({id:'cf_'+Date.now(),cat:'⭐ أطعمتي المخصصة',emoji:emojis[Math.floor(Math.random()*emojis.length)],name,cals,protein,carbs,fat});
+  saveFood();
+  document.getElementById('cf-name').value='';document.getElementById('cf-cals').value='';
+  document.getElementById('cf-protein').value='';document.getElementById('cf-carbs').value='';document.getElementById('cf-fat').value='';
+  renderFoodDB();toast(`✅ تم إضافة ${name}`,'ok');
+}
+
+// ══ HISTORY ═════════════════════════════════════════════
+function renderHistory(){
+  const goal=setup?setup.goal:2000;
+  const days=Object.keys(log).sort((a,b)=>b.localeCompare(a));
+  const list=document.getElementById('history-list');
+  if(!days.length){list.innerHTML='<div style="text-align:center;padding:40px;color:var(--muted);">لا يوجد سجل بعد 📭</div>';return;}
+  // Stats
+  let totalCals=0,streak=0;
+  const sorted=[...days].sort((a,b)=>b.localeCompare(a));
+  sorted.forEach(d=>{const m=log[d].meals||[];const c=m.reduce((a,x)=>a+x.cals,0);totalCals+=c;});
+  const avg=days.length?Math.round(totalCals/days.length):0;
+  // Streak
+  let sd=new Date();
+  for(let i=0;i<30;i++){const k=sd.toISOString().split('T')[0];if(log[k]&&(log[k].meals||[]).length){streak++;sd.setDate(sd.getDate()-1);}else break;}
+  document.getElementById('hs-days').textContent=days.length;
+  document.getElementById('hs-avg').textContent=avg;
+  document.getElementById('hs-streak').textContent=streak;
+  list.innerHTML=days.slice(0,30).map(d=>{
+    const meals=log[d].meals||[];
+    const cals=meals.reduce((a,m)=>a+m.cals,0);
+    const pct=Math.min(100,(cals/goal)*100);
+    const over=cals>goal;
+    const dte=new Date(d);
+    return`<div class="history-item"><div class="hi-date"><span class="day">${dte.getDate()}</span>${dte.toLocaleDateString('ar-SA',{month:'short'})}</div><div class="hi-bar-wrap"><div class="hi-title">${dte.toLocaleDateString('ar-SA',{weekday:'long'})}</div><div class="hi-bar-bg"><div class="hi-bar" style="width:${pct}%;background:${over?'linear-gradient(90deg,#ff9f43,#e74c3c)':'linear-gradient(90deg,var(--accent),var(--green))'}"></div></div></div><div class="hi-cals" style="color:${over?'#ff9f43':'var(--green)'}"><span style="font-family:Tajawal;font-size:18px;font-weight:800">${cals}</span><br/><span class="hi-status" style="color:var(--muted)">${over?'⬆️ زيادة':'✅ ضمن الهدف'}</span></div></div>`;
+  }).join('');
+}
+
+// ══ NAV ═════════════════════════════════════════════════
+function showPage(id,btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  if(btn)btn.classList.add('active');
+  if(id==='today')renderToday();
+  if(id==='foods')renderFoodDB();
+  if(id==='history')renderHistory();
+  if(id==='setup')loadSetupUI();
+  if(id==='programs'){renderPrograms();}
+  if(id==='progress'){renderProgressPage();}
+}
+
+// ══ TOAST ═══════════════════════════════════════════════
+let tt;
+function toast(msg,type=''){const el=document.getElementById('toast');el.textContent=msg;el.className='toast show'+(type?' '+type:'');clearTimeout(tt);tt=setTimeout(()=>el.classList.remove('show'),2500);}
+
+// ══ INIT ════════════════════════════════════════════════
+initFoods();
+renderToday();
+renderFoodDB();
+renderHistory();
+initFoods();
+renderToday();
+renderFoodDB();
+renderHistory();
+if(setup)loadSetupUI();
+
+// ── GIF Map ────────────────────────────────────────────
+const GIF_MAP={
+  'ضغط على الأرض':'https://fitnessprogramer.com/wp-content/uploads/2021/02/Push-Up.gif',
+  'سكوات':'https://fitnessprogramer.com/wp-content/uploads/2021/02/Air-Squat.gif',
+  'بلانك':'https://fitnessprogramer.com/wp-content/uploads/2021/02/Plank.gif',
+  'كرنش':'https://fitnessprogramer.com/wp-content/uploads/2021/02/Crunch.gif',
+  'بايك بوش أب':'https://fitnessprogramer.com/wp-content/uploads/2021/02/Pike-Push-Up.gif',
+  'جامبينج جاكس':'https://fitnessprogramer.com/wp-content/uploads/2021/02/Jumping-Jacks.gif',
+  'بيربي':'https://fitnessprogramer.com/wp-content/uploads/2021/02/Burpee.gif',
+  'ضغط واسع':'https://fitnessprogramer.com/wp-content/uploads/2021/02/Wide-Push-Up.gif',
+  'جامبينج سكوات':'https://fitnessprogramer.com/wp-content/uploads/2021/02/Jump-Squat.gif',
+  'مانتين كلايمبر':'https://fitnessprogramer.com/wp-content/uploads/2021/02/Mountain-Climber.gif',
+  'سايد بلانك':'https://fitnessprogramer.com/wp-content/uploads/2021/02/Side-Plank.gif',
+  'لنج':'https://fitnessprogramer.com/wp-content/uploads/2021/02/Lunge.gif',
+  'كالف رايز':'https://fitnessprogramer.com/wp-content/uploads/2021/02/Calf-Raise.gif',
+  'ليج رايز':'https://fitnessprogramer.com/wp-content/uploads/2021/02/Leg-Raise.gif',
+  'روسيان تويست':'https://fitnessprogramer.com/wp-content/uploads/2021/02/Russian-Twist.gif',
+  'دمبل بنش برس':'https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Bench-Press.gif',
+  'ضغط ضيق':'https://fitnessprogramer.com/wp-content/uploads/2021/02/Close-Grip-Push-Up.gif',
+  'فلاي بالدمبل':'https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Fly.gif',
+  'سكال كراشر':'https://fitnessprogramer.com/wp-content/uploads/2021/02/Skull-Crusher.gif',
+  'ديبس على الكرسي':'https://fitnessprogramer.com/wp-content/uploads/2021/02/Bench-Dip.gif',
+  'شين أب':'https://fitnessprogramer.com/wp-content/uploads/2021/02/Chin-Up.gif',
+  'دمبل رو':'https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Row.gif',
+  'هامر كيرل':'https://fitnessprogramer.com/wp-content/uploads/2021/02/Hammer-Curl.gif',
+  'بريتشر كيرل':'https://fitnessprogramer.com/wp-content/uploads/2021/02/Preacher-Curl.gif',
+  'سوبرمان':'https://fitnessprogramer.com/wp-content/uploads/2021/02/Superman.gif',
+  'هيب ثراست':'https://fitnessprogramer.com/wp-content/uploads/2021/02/Hip-Thrust.gif',
+  'جلسة الكرسي':'https://fitnessprogramer.com/wp-content/uploads/2021/02/Wall-Sit.gif',
+  'دمبل شولدر برس':'https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Shoulder-Press.gif',
+  'لاترال رايز':'https://fitnessprogramer.com/wp-content/uploads/2021/02/Lateral-Raise.gif',
+  'بولغاريان سكوات':'https://fitnessprogramer.com/wp-content/uploads/2021/02/Bulgarian-Split-Squat.gif',
+  'هاي نيز':'https://fitnessprogramer.com/wp-content/uploads/2021/02/High-Knees.gif',
+  'سكوات بالبار':'https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Squat.gif',
+  'ليج برس':'https://fitnessprogramer.com/wp-content/uploads/2021/02/Leg-Press.gif',
+  'رومانيان ديدليفت':'https://fitnessprogramer.com/wp-content/uploads/2021/02/Romanian-Deadlift.gif',
+  'ليج إكستنشن':'https://fitnessprogramer.com/wp-content/uploads/2021/02/Leg-Extension.gif',
+  'ليج كيرل':'https://fitnessprogramer.com/wp-content/uploads/2021/02/Leg-Curl.gif',
+  'بايسبس كيرل بالبار':'https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Curl.gif',
+  'ترايسبس بوش داون':'https://fitnessprogramer.com/wp-content/uploads/2021/02/Triceps-Pushdown.gif',
+  'أب ويل':'https://fitnessprogramer.com/wp-content/uploads/2021/02/Ab-Wheel-Rollout.gif',
+  'بنش برس بالبار':'https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Bench-Press.gif',
+  'إنكلاين بنش برس':'https://fitnessprogramer.com/wp-content/uploads/2021/02/Incline-Dumbbell-Bench-Press.gif',
+  'كيبل كروسوفر':'https://fitnessprogramer.com/wp-content/uploads/2021/02/Cable-Crossover.gif',
+  'ديبس للصدر':'https://fitnessprogramer.com/wp-content/uploads/2021/02/Chest-Dip.gif',
+  'ديدليفت':'https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Deadlift.gif',
+  'بول أب':'https://fitnessprogramer.com/wp-content/uploads/2021/02/Pull-Up.gif',
+  'بار رو':'https://fitnessprogramer.com/wp-content/uploads/2021/02/Bent-Over-Row.gif',
+  'لات بول داون':'https://fitnessprogramer.com/wp-content/uploads/2021/02/Lat-Pulldown.gif',
+  'فيس بول':'https://fitnessprogramer.com/wp-content/uploads/2021/02/Face-Pull.gif',
+  'أوفرهيد برس بالبار':'https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Overhead-Press.gif',
+  'أرنولد برس':'https://fitnessprogramer.com/wp-content/uploads/2021/02/Arnold-Press.gif',
+  'ريفيرس فلاي':'https://fitnessprogramer.com/wp-content/uploads/2021/02/Reverse-Fly.gif',
+  'أبرايت رو':'https://fitnessprogramer.com/wp-content/uploads/2021/02/Upright-Row.gif',
+};
+
+
+// ══ PROGRAMS DATA ══════════════════════════════════════
+const G=GIF_MAP;
+const PROGRAMS=[
+  {id:'beginner',icon:'🌱',name:'المبتدئ',desc:'برنامج 4 أسابيع لبناء عادة التمرين والقوة الأساسية',level:'مبتدئ',weeks:4,daysPerWeek:3,tags:['بدون أوزان','منزلي','3 أيام/أسبوع'],
+    schedule:[
+      {day:'الأحد',type:'workout',name:'تمرين الجزء العلوي',exercises:[{name:'ضغط على الأرض',gif:G['ضغط على الأرض'],sets:3,reps:'10'},{name:'سكوات',gif:G['سكوات'],sets:3,reps:'15'},{name:'بلانك',gif:G['بلانك'],sets:3,reps:'30 ثانية'},{name:'كرنش',gif:G['كرنش'],sets:3,reps:'15'},{name:'بايك بوش أب',gif:G['بايك بوش أب'],sets:3,reps:'8'}]},
+      {day:'الأثنين',type:'rest',name:'راحة 😴'},
+      {day:'الثلاثاء',type:'workout',name:'تمرين الأرجل والبطن',exercises:[{name:'سكوات',gif:G['سكوات'],sets:4,reps:'20'},{name:'لنج',gif:G['لنج'],sets:3,reps:'10'},{name:'كالف رايز',gif:G['كالف رايز'],sets:3,reps:'20'},{name:'ليج رايز',gif:G['ليج رايز'],sets:3,reps:'12'},{name:'روسيان تويست',gif:G['روسيان تويست'],sets:3,reps:'16'}]},
+      {day:'الأربعاء',type:'rest',name:'راحة 😴'},
+      {day:'الخميس',type:'workout',name:'تمرين كامل الجسم',exercises:[{name:'بيربي',gif:G['بيربي'],sets:3,reps:'8'},{name:'ضغط واسع',gif:G['ضغط واسع'],sets:3,reps:'12'},{name:'جامبينج سكوات',gif:G['جامبينج سكوات'],sets:3,reps:'10'},{name:'مانتين كلايمبر',gif:G['مانتين كلايمبر'],sets:3,reps:'20'},{name:'سايد بلانك',gif:G['سايد بلانك'],sets:2,reps:'20 ثانية'}]},
+      {day:'الجمعة',type:'workout',name:'تمرين الجمعة',exercises:[{name:'ضغط على الأرض',gif:G['ضغط على الأرض'],sets:3,reps:'12'},{name:'سكوات',gif:G['سكوات'],sets:3,reps:'15'},{name:'بلانك',gif:G['بلانك'],sets:3,reps:'30 ثانية'},{name:'كرنش',gif:G['كرنش'],sets:3,reps:'20'},{name:'جامبينج جاكس',gif:G['جامبينج جاكس'],sets:3,reps:'20'}]},
+      {day:'السبت',type:'rest',name:'راحة 😴'},
+    ]},
+  {id:'intermediate',icon:'⚡',name:'المتوسط',desc:'برنامج 4 أسابيع بـ 4 أيام لبناء العضلات',level:'متوسط',weeks:4,daysPerWeek:4,tags:['دمبل','4 أيام/أسبوع','تقسيم'],
+    schedule:[
+      {day:'الأحد',type:'workout',name:'صدر + ترايسبس',exercises:[{name:'دمبل بنش برس',gif:G['دمبل بنش برس'],sets:4,reps:'12'},{name:'ضغط ضيق',gif:G['ضغط ضيق'],sets:3,reps:'15'},{name:'فلاي بالدمبل',gif:G['فلاي بالدمبل'],sets:3,reps:'12'},{name:'سكال كراشر',gif:G['سكال كراشر'],sets:3,reps:'12'},{name:'ديبس على الكرسي',gif:G['ديبس على الكرسي'],sets:3,reps:'15'}]},
+      {day:'الأثنين',type:'workout',name:'ظهر + بايسبس',exercises:[{name:'شين أب',gif:G['شين أب'],sets:4,reps:'8'},{name:'دمبل رو',gif:G['دمبل رو'],sets:4,reps:'12'},{name:'هامر كيرل',gif:G['هامر كيرل'],sets:3,reps:'12'},{name:'بريتشر كيرل',gif:G['بريتشر كيرل'],sets:3,reps:'10'},{name:'سوبرمان',gif:G['سوبرمان'],sets:3,reps:'15'}]},
+      {day:'الثلاثاء',type:'rest',name:'راحة 😴'},
+      {day:'الأربعاء',type:'workout',name:'أرجل + مؤخرة',exercises:[{name:'سكوات',gif:G['سكوات'],sets:4,reps:'15'},{name:'لنج',gif:G['لنج'],sets:3,reps:'12'},{name:'هيب ثراست',gif:G['هيب ثراست'],sets:4,reps:'20'},{name:'كالف رايز',gif:G['كالف رايز'],sets:4,reps:'25'},{name:'جلسة الكرسي',gif:G['جلسة الكرسي'],sets:3,reps:'45 ثانية'}]},
+      {day:'الخميس',type:'workout',name:'أكتاف + بطن',exercises:[{name:'دمبل شولدر برس',gif:G['دمبل شولدر برس'],sets:4,reps:'12'},{name:'لاترال رايز',gif:G['لاترال رايز'],sets:3,reps:'15'},{name:'بلانك',gif:G['بلانك'],sets:3,reps:'45 ثانية'},{name:'روسيان تويست',gif:G['روسيان تويست'],sets:3,reps:'20'},{name:'ليج رايز',gif:G['ليج رايز'],sets:3,reps:'15'}]},
+      {day:'الجمعة',type:'workout',name:'تمرين الجمعة',exercises:[{name:'ضغط على الأرض',gif:G['ضغط على الأرض'],sets:3,reps:'12'},{name:'سكوات',gif:G['سكوات'],sets:3,reps:'15'},{name:'بلانك',gif:G['بلانك'],sets:3,reps:'30 ثانية'},{name:'كرنش',gif:G['كرنش'],sets:3,reps:'20'},{name:'جامبينج جاكس',gif:G['جامبينج جاكس'],sets:3,reps:'20'}]},
+      {day:'السبت',type:'rest',name:'راحة 😴'},
+    ]},
+  {id:'advanced',icon:'🔥',name:'المتقدم',desc:'برنامج 6 أسابيع مكثف بـ 5 أيام',level:'متقدم',weeks:6,daysPerWeek:5,tags:['أوزان','5 أيام/أسبوع','مكثف'],
+    schedule:[
+      {day:'الأحد',type:'workout',name:'صدر',exercises:[{name:'بنش برس بالبار',gif:G['بنش برس بالبار'],sets:5,reps:'8'},{name:'إنكلاين بنش برس',gif:G['إنكلاين بنش برس'],sets:4,reps:'10'},{name:'فلاي بالدمبل',gif:G['فلاي بالدمبل'],sets:4,reps:'12'},{name:'كيبل كروسوفر',gif:G['كيبل كروسوفر'],sets:3,reps:'15'},{name:'ديبس للصدر',gif:G['ديبس للصدر'],sets:3,reps:'12'}]},
+      {day:'الأثنين',type:'workout',name:'ظهر',exercises:[{name:'ديدليفت',gif:G['ديدليفت'],sets:4,reps:'5'},{name:'بول أب',gif:G['بول أب'],sets:4,reps:'10'},{name:'بار رو',gif:G['بار رو'],sets:4,reps:'10'},{name:'لات بول داون',gif:G['لات بول داون'],sets:3,reps:'12'},{name:'فيس بول',gif:G['فيس بول'],sets:3,reps:'15'}]},
+      {day:'الثلاثاء',type:'workout',name:'أكتاف',exercises:[{name:'أوفرهيد برس بالبار',gif:G['أوفرهيد برس بالبار'],sets:4,reps:'8'},{name:'لاترال رايز',gif:G['لاترال رايز'],sets:4,reps:'15'},{name:'أرنولد برس',gif:G['أرنولد برس'],sets:3,reps:'12'},{name:'ريفيرس فلاي',gif:G['ريفيرس فلاي'],sets:3,reps:'15'},{name:'أبرايت رو',gif:G['أبرايت رو'],sets:3,reps:'12'}]},
+      {day:'الأربعاء',type:'workout',name:'أرجل',exercises:[{name:'سكوات بالبار',gif:G['سكوات بالبار'],sets:5,reps:'8'},{name:'ليج برس',gif:G['ليج برس'],sets:4,reps:'12'},{name:'رومانيان ديدليفت',gif:G['رومانيان ديدليفت'],sets:4,reps:'10'},{name:'ليج إكستنشن',gif:G['ليج إكستنشن'],sets:3,reps:'15'},{name:'ليج كيرل',gif:G['ليج كيرل'],sets:3,reps:'15'}]},
+      {day:'الخميس',type:'workout',name:'ذراعين + بطن',exercises:[{name:'بايسبس كيرل بالبار',gif:G['بايسبس كيرل بالبار'],sets:4,reps:'10'},{name:'سكال كراشر',gif:G['سكال كراشر'],sets:4,reps:'10'},{name:'هامر كيرل',gif:G['هامر كيرل'],sets:3,reps:'12'},{name:'ترايسبس بوش داون',gif:G['ترايسبس بوش داون'],sets:3,reps:'15'},{name:'أب ويل',gif:G['أب ويل'],sets:3,reps:'10'}]},
+      {day:'الجمعة',type:'workout',name:'تمرين الجمعة',exercises:[{name:'ضغط على الأرض',gif:G['ضغط على الأرض'],sets:3,reps:'12'},{name:'سكوات',gif:G['سكوات'],sets:3,reps:'15'},{name:'بلانك',gif:G['بلانك'],sets:3,reps:'30 ثانية'},{name:'كرنش',gif:G['كرنش'],sets:3,reps:'20'},{name:'جامبينج جاكس',gif:G['جامبينج جاكس'],sets:3,reps:'20'}]},
+      {day:'السبت',type:'rest',name:'راحة كاملة 😴'},
+    ]},
+  {id:'home',icon:'🏠',name:'تمارين المنزل',desc:'برنامج 4 أسابيع كامل بدون أي معدات',level:'مبتدئ',weeks:4,daysPerWeek:4,tags:['بدون معدات','منزلي','4 أيام/أسبوع'],
+    schedule:[
+      {day:'الأحد',type:'workout',name:'جزء علوي',exercises:[{name:'ضغط على الأرض',gif:G['ضغط على الأرض'],sets:4,reps:'15'},{name:'ضغط واسع',gif:G['ضغط واسع'],sets:3,reps:'12'},{name:'ديبس على الكرسي',gif:G['ديبس على الكرسي'],sets:3,reps:'15'},{name:'بايك بوش أب',gif:G['بايك بوش أب'],sets:3,reps:'10'},{name:'بلانك',gif:G['بلانك'],sets:3,reps:'40 ثانية'}]},
+      {day:'الأثنين',type:'workout',name:'أرجل',exercises:[{name:'سكوات',gif:G['سكوات'],sets:4,reps:'20'},{name:'جامبينج سكوات',gif:G['جامبينج سكوات'],sets:3,reps:'12'},{name:'لنج',gif:G['لنج'],sets:3,reps:'12'},{name:'بولغاريان سكوات',gif:G['بولغاريان سكوات'],sets:3,reps:'10'},{name:'كالف رايز',gif:G['كالف رايز'],sets:4,reps:'25'}]},
+      {day:'الثلاثاء',type:'rest',name:'راحة 😴'},
+      {day:'الأربعاء',type:'workout',name:'كور + كارديو',exercises:[{name:'مانتين كلايمبر',gif:G['مانتين كلايمبر'],sets:3,reps:'30 ثانية'},{name:'بيربي',gif:G['بيربي'],sets:3,reps:'10'},{name:'جامبينج جاكس',gif:G['جامبينج جاكس'],sets:3,reps:'30'},{name:'روسيان تويست',gif:G['روسيان تويست'],sets:3,reps:'20'},{name:'ليج رايز',gif:G['ليج رايز'],sets:3,reps:'15'}]},
+      {day:'الخميس',type:'workout',name:'كامل الجسم',exercises:[{name:'بيربي',gif:G['بيربي'],sets:3,reps:'10'},{name:'ضغط ضيق',gif:G['ضغط ضيق'],sets:3,reps:'12'},{name:'هيب ثراست',gif:G['هيب ثراست'],sets:4,reps:'20'},{name:'سايد بلانك',gif:G['سايد بلانك'],sets:2,reps:'30 ثانية'},{name:'هاي نيز',gif:G['هاي نيز'],sets:3,reps:'30 ثانية'}]},
+      {day:'الجمعة',type:'workout',name:'تمرين الجمعة',exercises:[{name:'ضغط على الأرض',gif:G['ضغط على الأرض'],sets:3,reps:'12'},{name:'سكوات',gif:G['سكوات'],sets:3,reps:'15'},{name:'بلانك',gif:G['بلانك'],sets:3,reps:'30 ثانية'},{name:'كرنش',gif:G['كرنش'],sets:3,reps:'20'},{name:'جامبينج جاكس',gif:G['جامبينج جاكس'],sets:3,reps:'20'}]},
+      {day:'السبت',type:'rest',name:'راحة 😴'},
+    ]},
+  {id:'cardio',icon:'🏃',name:'حرق الدهون',desc:'كارديو مكثف 3 أسابيع لحرق السعرات',level:'متوسط',weeks:3,daysPerWeek:5,tags:['كارديو','حرق دهون','5 أيام/أسبوع'],
+    schedule:[
+      {day:'الأحد',type:'workout',name:'HIIT عالي الكثافة',exercises:[{name:'بيربي',gif:G['بيربي'],sets:4,reps:'12'},{name:'جامبينج جاكس',gif:G['جامبينج جاكس'],sets:4,reps:'30'},{name:'هاي نيز',gif:G['هاي نيز'],sets:4,reps:'30 ثانية'},{name:'مانتين كلايمبر',gif:G['مانتين كلايمبر'],sets:4,reps:'30 ثانية'},{name:'جامبينج سكوات',gif:G['جامبينج سكوات'],sets:3,reps:'15'}]},
+      {day:'الأثنين',type:'workout',name:'كارديو',exercises:[{name:'جامبينج جاكس',gif:G['جامبينج جاكس'],sets:4,reps:'30'},{name:'هاي نيز',gif:G['هاي نيز'],sets:4,reps:'1 دقيقة'},{name:'بيربي',gif:G['بيربي'],sets:3,reps:'10'},{name:'مانتين كلايمبر',gif:G['مانتين كلايمبر'],sets:3,reps:'30 ثانية'},{name:'جامبينج سكوات',gif:G['جامبينج سكوات'],sets:3,reps:'15'}]},
+      {day:'الثلاثاء',type:'workout',name:'تابيتا',exercises:[{name:'جامبينج سكوات',gif:G['جامبينج سكوات'],sets:8,reps:'20 ثانية'},{name:'بيربي',gif:G['بيربي'],sets:8,reps:'20 ثانية'},{name:'هاي نيز',gif:G['هاي نيز'],sets:8,reps:'20 ثانية'},{name:'مانتين كلايمبر',gif:G['مانتين كلايمبر'],sets:8,reps:'20 ثانية'},{name:'جامبينج جاكس',gif:G['جامبينج جاكس'],sets:4,reps:'20 ثانية'}]},
+      {day:'الأربعاء',type:'rest',name:'راحة نشطة 🚶'},
+      {day:'الخميس',type:'workout',name:'HIIT + قوة',exercises:[{name:'بيربي',gif:G['بيربي'],sets:3,reps:'10'},{name:'ضغط على الأرض',gif:G['ضغط على الأرض'],sets:3,reps:'15'},{name:'جامبينج سكوات',gif:G['جامبينج سكوات'],sets:3,reps:'15'},{name:'مانتين كلايمبر',gif:G['مانتين كلايمبر'],sets:3,reps:'30 ثانية'},{name:'روسيان تويست',gif:G['روسيان تويست'],sets:3,reps:'20'}]},
+      {day:'الجمعة',type:'workout',name:'كارديو طويل',exercises:[{name:'جامبينج جاكس',gif:G['جامبينج جاكس'],sets:5,reps:'30'},{name:'هاي نيز',gif:G['هاي نيز'],sets:5,reps:'1 دقيقة'},{name:'بيربي',gif:G['بيربي'],sets:3,reps:'10'},{name:'مانتين كلايمبر',gif:G['مانتين كلايمبر'],sets:3,reps:'30 ثانية'},{name:'جامبينج سكوات',gif:G['جامبينج سكوات'],sets:3,reps:'15'}]},
+      {day:'السبت',type:'rest',name:'راحة كاملة 😴'},
+    ]},
+];
+
+const WK={prog:'workout_prog',log:'workout_log'};
+let workoutProg=JSON.parse(localStorage.getItem(WK.prog)||'null');
+let workoutLog=JSON.parse(localStorage.getItem(WK.log)||'{}');
+let activeWorkoutDay=null,wsChecked={};
+function saveWorkoutProg(){localStorage.setItem(WK.prog,JSON.stringify(workoutProg));}
+function saveWorkoutLog(){localStorage.setItem(WK.log,JSON.stringify(workoutLog));}
+
+// ── Program list & detail ──────────────────────────────
+let viewingProg=null;
+
+function renderPrograms(){
+  document.getElementById('prog-list-view').style.display='block';
+  document.getElementById('prog-detail-view').style.display='none';
+  const grid=document.getElementById('programs-grid');
+  grid.innerHTML=PROGRAMS.map(p=>`
+    <div class="program-card ${workoutProg&&workoutProg.id===p.id?'active-prog':''}" onclick="viewProgram('${p.id}')">
+      <div class="prog-header">
+        <div class="prog-icon">${p.icon}</div>
+        <div class="prog-name">${p.name}</div>
+        <div class="prog-desc">${p.desc}</div>
+        <div class="prog-tags">${p.tags.map(t=>`<span class="prog-tag">${t}</span>`).join('')}<span class="prog-tag">${p.level}</span></div>
+      </div>
+      <div class="prog-footer">
+        <span class="prog-weeks">📅 ${p.weeks} أسابيع · ${p.daysPerWeek} أيام/أسبوع</span>
+        <span class="prog-start-btn ${workoutProg&&workoutProg.id===p.id?'started':''}">${workoutProg&&workoutProg.id===p.id?'✅ نشط':'عرض'}</span>
+      </div>
+    </div>`).join('');
+}
+
+function viewProgram(id){
+  viewingProg=id;
+  const prog=PROGRAMS.find(p=>p.id===id);if(!prog)return;
+  document.getElementById('prog-list-view').style.display='none';
+  document.getElementById('prog-detail-view').style.display='block';
+  const isActive=workoutProg&&workoutProg.id===id;
+  const now=new Date();const today=now.getDay();
+  const todayKey=now.toISOString().split('T')[0];
+  let week=1;
+  if(isActive){
+    const diff=Math.floor((now-new Date(workoutProg.startDate))/(1000*60*60*24));
+    week=Math.min(Math.floor(diff/7)+1,prog.weeks);
+  }
+  document.getElementById('prog-detail-content').innerHTML=`
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;overflow:hidden;margin-bottom:20px;">
+      <div style="padding:20px;background:linear-gradient(135deg,rgba(108,99,255,.1),rgba(255,101,132,.08));">
+        <div style="font-size:48px;margin-bottom:8px">${prog.icon}</div>
+        <div style="font-family:Tajawal,sans-serif;font-size:24px;font-weight:800;color:var(--white);margin-bottom:6px">${prog.name}</div>
+        <div style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:10px">${prog.desc}</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">${prog.tags.map(t=>`<span class="prog-tag">${t}</span>`).join('')}</div>
+      </div>
+      ${isActive?`<div style="padding:12px 20px;border-top:1px solid var(--border);">
+        <div style="font-size:11px;color:var(--muted);margin-bottom:6px">الأسبوع ${week} من ${prog.weeks}</div>
+        <div class="apw-progress"><div class="apw-progress-fill" style="width:${Math.min(100,((week-1)/prog.weeks)*100)}%"></div></div>
+      </div>`:''}
+    </div>
+
+    <h3 style="font-size:14px;font-weight:700;color:var(--muted);margin-bottom:14px;letter-spacing:2px">📅 الجدول الأسبوعي</h3>
+    ${prog.schedule.map((d,i)=>{
+      const isToday=i===today;
+      const doneKey=todayKey+'_'+id+'_'+i;
+      const isDone=workoutLog[doneKey];
+      const isRest=d.type==='rest';
+      return`<div style="background:var(--surface);border:1.5px solid ${isToday?'var(--accent)':isDone?'var(--green)':isRest?'var(--border)':'var(--border)'};border-radius:16px;overflow:hidden;margin-bottom:10px;">
+        <div style="padding:14px 16px;display:flex;align-items:center;gap:12px;">
+          <div style="width:36px;height:36px;border-radius:10px;background:${isRest?'var(--card)':isDone?'rgba(0,212,170,.15)':isToday?'rgba(108,99,255,.15)':'var(--card)'};display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">${isDone?'✅':isRest?'😴':isToday?'⚡':'💪'}</div>
+          <div style="flex:1">
+            <div style="font-size:13px;font-weight:700;color:${isToday?'var(--accent)':isDone?'var(--green)':'var(--white)'}">${d.day} ${isToday?'← اليوم':''}</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px">${d.name}</div>
+          </div>
+          ${!isRest&&!isDone?`<span style="font-size:11px;color:var(--muted)">${d.exercises.length} تمارين</span>`:''}
+        </div>
+        ${!isRest?`<div style="padding:0 16px 14px;display:flex;flex-direction:column;gap:6px">
+          ${d.exercises.map((ex,j)=>`<div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--card);border-radius:9px;">
+            <span style="font-size:11px;color:var(--accent);font-weight:700;width:18px">${j+1}</span>
+            <span style="font-size:12px;color:var(--text);flex:1">${ex.name}</span>
+            <span style="font-size:11px;color:var(--muted)">${ex.sets}×${ex.reps}</span>
+          </div>`).join('')}
+        </div>`:''}
+      </div>`;
+    }).join('')}
+
+    <div style="margin-top:20px;display:flex;flex-direction:column;gap:10px;">
+      ${isActive
+        ?`<button onclick="startTodayWorkout('${id}')" style="width:100%;padding:15px;border-radius:14px;border:none;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-family:Cairo,sans-serif;font-size:15px;font-weight:800;cursor:pointer;">⚡ ابدأ تمرين اليوم</button>
+           <button onclick="pickWorkoutDay('${id}')" style="width:100%;padding:12px;border-radius:14px;border:1.5px solid var(--accent);background:transparent;color:var(--accent);font-family:Cairo,sans-serif;font-size:13px;font-weight:700;cursor:pointer;margin-top:4px;">📅 اختر يوماً آخر</button>
+           <button onclick="stopProgram()" style="width:100%;padding:12px;border-radius:14px;border:1.5px solid var(--accent2);background:transparent;color:var(--accent2);font-family:Cairo,sans-serif;font-size:13px;font-weight:700;cursor:pointer;">إيقاف البرنامج</button>`
+        :`<button onclick="startProgram('${id}')" style="width:100%;padding:15px;border-radius:14px;border:none;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-family:Cairo,sans-serif;font-size:15px;font-weight:800;cursor:pointer;">🚀 ابدأ هذا البرنامج</button>`
+      }
+    </div>`;
+}
+
+function backToProgList(){
+  viewingProg=null;
+  document.getElementById('prog-list-view').style.display='block';
+  document.getElementById('prog-detail-view').style.display='none';
+}
+
+function startProgram(id){
+  if(workoutProg&&!confirm('تبديل البرنامج الحالي؟'))return;
+  workoutProg={id,startDate:new Date().toISOString().split('T')[0]};
+  saveWorkoutProg();
+  toast('🎉 تم بدء البرنامج!','ok');
+  // Re-render detail view to show new buttons
+  viewProgram(id);
+}
+
+function stopProgram(){
+  if(!confirm('إيقاف البرنامج؟'))return;
+  workoutProg=null;saveWorkoutProg();backToProgList();renderPrograms();
+}
+
+function startTodayWorkout(progId){
+  const prog=PROGRAMS.find(p=>p.id===progId);if(!prog)return;
+  const today=new Date().getDay();
+  const day=prog.schedule[today];
+  if(day&&day.type==='workout'){
+    openWorkoutScreen(progId,today,day);
+    return;
+  }
+  // Today is rest — find next workout day
+  for(let i=1;i<=6;i++){
+    const idx=(today+i)%7;
+    const next=prog.schedule[idx];
+    if(next&&next.type==='workout'){
+      openWorkoutScreen(progId,idx,next);
+      return;
+    }
+  }
+  toast('لا يوجد تمارين في هذا البرنامج',true);
+}
+
+function pickWorkoutDay(progId){
+  const prog=PROGRAMS.find(p=>p.id===progId);if(!prog)return;
+  const workoutDays=prog.schedule.map((d,i)=>({...d,idx:i})).filter(d=>d.type==='workout');
+  if(!workoutDays.length){toast('لا يوجد تمارين',true);return;}
+  // Always start first workout day for testing
+  const first=workoutDays[0];
+  openWorkoutScreen(progId,first.idx,first);
+}
+let wkState={progId:null,dayIdx:null,exercises:[],currentEx:0,currentSet:1,timer:null,timeLeft:45,isRunning:false,startTime:null,totalTime:0};
+const REST_TIME=20;const EXERCISE_TIME=45;
+
+// ── Audio ──────────────────────────────────────────────
+function playWhistle(){
+  try{
+    const ctx=new(window.AudioContext||window.webkitAudioContext)();
+    const osc=ctx.createOscillator();const gain=ctx.createGain();
+    osc.connect(gain);gain.connect(ctx.destination);
+    osc.type='sine';
+    osc.frequency.setValueAtTime(1200,ctx.currentTime);
+    osc.frequency.linearRampToValueAtTime(1800,ctx.currentTime+0.1);
+    osc.frequency.linearRampToValueAtTime(1400,ctx.currentTime+0.25);
+    gain.gain.setValueAtTime(0.5,ctx.currentTime);
+    gain.gain.linearRampToValueAtTime(0,ctx.currentTime+0.3);
+    osc.start(ctx.currentTime);osc.stop(ctx.currentTime+0.3);
+  }catch(e){}
+}
+function playBeep(){
+  try{
+    const ctx=new(window.AudioContext||window.webkitAudioContext)();
+    const osc=ctx.createOscillator();const gain=ctx.createGain();
+    osc.connect(gain);gain.connect(ctx.destination);
+    osc.type='sine';osc.frequency.value=880;
+    gain.gain.setValueAtTime(0.3,ctx.currentTime);
+    gain.gain.linearRampToValueAtTime(0,ctx.currentTime+0.15);
+    osc.start(ctx.currentTime);osc.stop(ctx.currentTime+0.15);
+  }catch(e){}
+}
+
+function findGif(exName){
+  // Direct lookup first
+  if(GIF_MAP[exName])return GIF_MAP[exName];
+  // Search EXERCISES data
+  for(const cat of Object.values(EXERCISES)){
+    const found=cat.exercises.find(e=>e.name===exName);
+    if(found&&found.img)return found.img;
+  }
+  return '';
+}
+
+function openWorkoutScreen(progId,dayIdx,day){
+  wkState={progId,dayIdx,exercises:day.exercises,currentEx:0,currentSet:1,timer:null,timeLeft:EXERCISE_TIME,isRunning:false,startTime:Date.now(),totalTime:0};
+  const prog=PROGRAMS.find(p=>p.id===progId);
+  document.getElementById('wk-prog-name').textContent=prog?prog.name:'';
+  document.getElementById('wk-day-name').textContent=day.name;
+  document.getElementById('workout-screen').style.display='flex';
+  document.body.style.overflow='hidden';
+  updateWorkoutUI();
+}
+
+function updateWorkoutUI(){
+  const ex=wkState.exercises[wkState.currentEx];if(!ex)return;
+  document.getElementById('wk-counter').textContent=`${wkState.currentEx+1}/${wkState.exercises.length}`;
+  // GIF — use direct gif field first, then findGif
+  const gif=ex.gif||findGif(ex.name);
+  const imgEl=document.getElementById('wk-gif');
+  const fallEl=document.getElementById('wk-gif-fallback');
+  if(gif){imgEl.src=gif;imgEl.style.display='block';fallEl.style.display='none';}
+  else{imgEl.src='';imgEl.style.display='none';fallEl.style.display='flex';}
+  document.getElementById('wk-ex-name').textContent=ex.name;
+  document.getElementById('wk-sets-info').textContent=`السيت ${wkState.currentSet} من ${ex.sets} · ${ex.reps} تكرار`;
+  document.getElementById('wk-ex-list').innerHTML=wkState.exercises.map((e,i)=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:8px;border-radius:8px;background:${i===wkState.currentEx?'rgba(108,99,255,.12)':'transparent'};border:1px solid ${i===wkState.currentEx?'var(--accent)':'transparent'};">
+      <span style="font-size:11px;font-weight:700;color:${i<wkState.currentEx?'var(--green)':i===wkState.currentEx?'var(--accent)':'var(--muted)'};width:18px">${i<wkState.currentEx?'✓':i+1}</span>
+      <span style="font-size:12px;color:${i===wkState.currentEx?'var(--white)':'var(--muted)'};flex:1">${e.name}</span>
+      <span style="font-size:10px;color:var(--muted)">${e.sets}×${e.reps}</span>
+    </div>`).join('');
+  resetTimer();
+  // Play whistle when new exercise starts
+  playWhistle();
+}
+
+function resetTimer(){
+  clearInterval(wkState.timer);
+  wkState.isRunning=false;
+  wkState.timeLeft=EXERCISE_TIME;
+  document.getElementById('wk-play-btn').textContent='▶';
+  document.getElementById('wk-rest-banner').style.display='none';
+  updateTimerDisplay();
+}
+
+function updateTimerDisplay(){
+  const t=wkState.timeLeft;
+  document.getElementById('wk-timer-num').textContent=t;
+  const C=439.8;
+  const maxTime=wkState.isRest?REST_TIME:EXERCISE_TIME;
+  document.getElementById('wk-timer-ring').style.strokeDashoffset=C*(1-t/maxTime);
+}
+
+function toggleTimer(){
+  if(wkState.isRunning){
+    clearInterval(wkState.timer);wkState.isRunning=false;
+    document.getElementById('wk-play-btn').textContent='▶';
+  } else {
+    wkState.isRunning=true;
+    document.getElementById('wk-play-btn').textContent='⏸';
+    wkState.timer=setInterval(()=>{
+      wkState.timeLeft--;
+      updateTimerDisplay();
+      if(wkState.timeLeft<=0){
+        clearInterval(wkState.timer);wkState.isRunning=false;
+        document.getElementById('wk-play-btn').textContent='▶';
+        playWhistle();
+        if(wkState.isRest){wkState.isRest=false;document.getElementById('wk-rest-banner').style.display='none';updateWorkoutUI();}
+        else autoNextSet();
+      }
+    },1000);
+  }
+}
+
+function autoNextSet(){
+  const ex=wkState.exercises[wkState.currentEx];
+  if(wkState.currentSet<ex.sets){
+    wkState.currentSet++;
+    wkState.isRest=true;wkState.timeLeft=REST_TIME;
+    document.getElementById('wk-rest-banner').style.display='block';
+    document.getElementById('wk-sets-info').textContent=`السيت ${wkState.currentSet} من ${ex.sets} · ${ex.reps} تكرار`;
+    updateTimerDisplay();
+    // Auto-start rest
+    wkState.isRunning=true;document.getElementById('wk-play-btn').textContent='⏸';
+    wkState.timer=setInterval(()=>{wkState.timeLeft--;updateTimerDisplay();if(wkState.timeLeft<=0){clearInterval(wkState.timer);wkState.isRunning=false;document.getElementById('wk-play-btn').textContent='▶';wkState.isRest=false;document.getElementById('wk-rest-banner').style.display='none';wkState.timeLeft=EXERCISE_TIME;updateTimerDisplay();}},1000);
+  } else {
+    nextExercise();
+  }
+}
+
+function nextExercise(){
+  clearInterval(wkState.timer);wkState.isRest=false;
+  if(wkState.currentEx>=wkState.exercises.length-1){finishWorkoutScreen();return;}
+  wkState.currentEx++;wkState.currentSet=1;
+  updateWorkoutUI();toast('✅ انتقلنا للتمرين التالي','ok');
+}
+
+function prevExercise(){
+  clearInterval(wkState.timer);wkState.isRest=false;
+  if(wkState.currentEx<=0)return;
+  wkState.currentEx--;wkState.currentSet=1;
+  updateWorkoutUI();
+}
+
+function finishWorkoutScreen(){
+  clearInterval(wkState.timer);
+  const dur=Math.round((Date.now()-wkState.startTime)/60000);
+  // Save log
+  const key=new Date().toISOString().split('T')[0]+'_'+wkState.progId+'_'+wkState.dayIdx;
+  workoutLog[key]={date:new Date().toISOString(),progId:wkState.progId,dayIdx:wkState.dayIdx,duration:dur};
+  saveWorkoutLog();
+  document.getElementById('workout-screen').style.display='none';
+  document.body.style.overflow='';
+  // Show finish screen
+  document.getElementById('fin-excount').textContent=wkState.exercises.length;
+  document.getElementById('fin-duration').textContent=dur||1;
+  const fs=document.getElementById('finish-screen');
+  fs.style.display='flex';
+  renderProgressPage();
+}
+
+function exitWorkout(){
+  if(!confirm('إنهاء التمرين؟'))return;
+  clearInterval(wkState.timer);
+  document.getElementById('workout-screen').style.display='none';
+  document.body.style.overflow='';
+}
+
+function closeFinish(){
+  document.getElementById('finish-screen').style.display='none';
+  showPage('programs',document.querySelectorAll('.nav-btn')[4]);
+  renderPrograms();
+}
+
+// ══ PROGRESS ══════════════════════════════════════════
+const ACHIEVEMENTS=[
+  {id:'first',icon:'🌱',name:'الخطوة الأولى',desc:'أكمل أول تمرين',req:1},
+  {id:'streak3',icon:'🔥',name:'ثلاثة متتالية',desc:'3 أيام متتالية',req:3,streak:true},
+  {id:'ten',icon:'💪',name:'عاشر تمرين',desc:'أكمل 10 تمارين',req:10},
+  {id:'week1',icon:'⭐',name:'أسبوع كامل',desc:'7 أيام متتالية',req:7,streak:true},
+  {id:'thirty',icon:'🏆',name:'بطل الشهر',desc:'30 تمرين',req:30},
+  {id:'fifty',icon:'💎',name:'خمسون تمريناً',desc:'أكمل 50 تمرين',req:50},
+];
+function renderProgressPage(){
+  const logs=Object.keys(workoutLog);const total=logs.length;
+  const uniqueDays=[...new Set(logs.map(k=>k.split('_')[0]))].sort();
+  const today=new Date();const todayStr=today.toISOString().split('T')[0];
+  let streak=0;
+  for(let i=0;i<uniqueDays.length;i++){
+    const d=uniqueDays[uniqueDays.length-1-i];
+    const diff=Math.floor((today-new Date(d))/(1000*60*60*24));
+    if(diff===i)streak++;else break;
+  }
+  let best=0,cur=1;
+  for(let i=1;i<uniqueDays.length;i++){
+    const a=new Date(uniqueDays[i-1]),b=new Date(uniqueDays[i]);
+    if(Math.round((b-a)/(1000*60*60*24))===1){cur++;best=Math.max(best,cur);}else cur=1;
+  }
+  const weekStart=new Date(today);weekStart.setDate(today.getDate()-today.getDay());
+  const thisWeek=uniqueDays.filter(d=>new Date(d)>=weekStart).length;
+  document.getElementById('pr-total').textContent=total;
+  document.getElementById('pr-streak').textContent=streak;
+  document.getElementById('pr-week').textContent=thisWeek;
+  document.getElementById('pr-best').textContent=Math.max(best,streak);
+  // Calendar
+  document.getElementById('pc-days-labels').innerHTML=['أ','إ','ث','أر','خ','ج','س'].map(l=>`<div class="pc-day" style="background:transparent;border-color:transparent;color:var(--muted);font-size:9px;font-weight:700">${l}</div>`).join('');
+  const days=[];for(let i=83;i>=0;i--){const d=new Date(today);d.setDate(d.getDate()-i);days.push(d);}
+  document.getElementById('pc-grid').innerHTML=days.map(d=>{
+    const k=d.toISOString().split('T')[0];
+    return`<div class="pc-day ${uniqueDays.includes(k)?'worked':''} ${k===todayStr?'today-cal':''}">${d.getDate()}</div>`;
+  }).join('');
+  // Achievements
+  document.getElementById('achievements-list').innerHTML=ACHIEVEMENTS.map(a=>{
+    const val=a.streak?streak:total;const unlocked=val>=a.req;
+    return`<div class="achievement ${unlocked?'unlocked':''}">
+      <span class="ach-icon">${a.icon}</span><div class="ach-info"><div class="ach-name">${a.name}</div><div class="ach-desc">${a.desc}</div></div>
+      <span class="ach-badge ${unlocked?'unlocked':'locked'}">${unlocked?'✅ مفتوح':`${val}/${a.req}`}</span></div>`;
+  }).join('');
+}
+
+// ══ EXERCISES ══════════════════════════════════════════
+const EXERCISES={
+  chest:{name:'الصدر',icon:'🫁',exercises:[
+    {name:'بنش برس بالدمبل',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Bench-Press.gif',muscle:'صدر كامل',equip:'دمبل + بنش',level:'مبتدئ',sets:'4',reps:'10-12',home:false,desc:'استلقِ على البنش وارفع الدمبل للأعلى مع ثبات الكوعين.'},
+    {name:'ضغط على الأرض',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Push-Up.gif',muscle:'صدر + كتف + ترايسبس',equip:'بدون',level:'مبتدئ',sets:'4',reps:'15-20',home:true,desc:'تمرين كلاسيكي — يديك بعرض الكتف أو أعرض.'},
+    {name:'ضغط واسع',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Wide-Push-Up.gif',muscle:'صدر خارجي',equip:'بدون',level:'مبتدئ',sets:'3',reps:'15',home:true,desc:'فرّد يديك أعرض من الكتف لاستهداف الصدر الخارجي.'},
+    {name:'ضغط ضيق',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Close-Grip-Push-Up.gif',muscle:'صدر داخلي + ترايسبس',equip:'بدون',level:'مبتدئ',sets:'3',reps:'12',home:true,desc:'قرّب يديك لاستهداف الصدر الداخلي.'},
+    {name:'فلاي بالدمبل',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Fly.gif',muscle:'صدر خارجي',equip:'دمبل + بنش',level:'متوسط',sets:'3',reps:'12-15',home:false,desc:'فتح وإغلاق الذراعين مع الإحساس بشد الصدر.'},
+    {name:'بنش برس مائل للأعلى',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Incline-Dumbbell-Bench-Press.gif',muscle:'صدر علوي',equip:'دمبل + بنش مائل',level:'متوسط',sets:'4',reps:'10-12',home:false,desc:'ميّل البنش 30-45 درجة لاستهداف الصدر العلوي.'},
+    {name:'ديبس للصدر',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Chest-Dip.gif',muscle:'صدر سفلي + ترايسبس',equip:'أعمدة',level:'متوسط',sets:'3',reps:'10-15',home:false,desc:'انحنِ للأمام أثناء الديبس لاستهداف الصدر السفلي.'},
+    {name:'ضغط على كرسي',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Decline-Push-Up.gif',muscle:'صدر علوي',equip:'كرسي',level:'مبتدئ',sets:'3',reps:'15',home:true,desc:'ضع قدميك على الكرسي وادِّ الضغط للصدر العلوي.'},
+    {name:'بنش برس بالبار',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Bench-Press.gif',muscle:'صدر كامل',equip:'بار + بنش',level:'متوسط',sets:'4',reps:'8-12',home:false,desc:'الملك — أمسك البار بعرض الكتف وانزل ببطء.'},
+    {name:'بوش أب ببطء',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Push-Up.gif',muscle:'صدر + ترايسبس',equip:'بدون',level:'متوسط',sets:'3',reps:'8',home:true,desc:'انزل ببطء لـ4 ثوانٍ وارجع لثانيتين لزيادة الصعوبة.'},
+    {name:'كيبل كروسوفر',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Cable-Crossover.gif',muscle:'صدر داخلي',equip:'كيبل',level:'متقدم',sets:'3',reps:'12-15',home:false,desc:'يُقرّب الكيبل من أمامك لضغط الصدر الداخلي.'},
+    {name:'ضغط قبضة',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Knuckle-Push-Up.gif',muscle:'صدر كامل',equip:'بدون',level:'مبتدئ',sets:'3',reps:'15',home:true,desc:'ادِّ الضغط على قبضتيك لمدى حركة أوسع.'},
+  ]},
+  back:{name:'الظهر',icon:'🔙',exercises:[
+    {name:'بول أب',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Pull-Up.gif',muscle:'لاتس + بايسبس',equip:'عارضة',level:'متوسط',sets:'4',reps:'6-12',home:true,desc:'تعلّق بالعارضة واسحب جسمك لأعلى حتى يصل الذقن.'},
+    {name:'شين أب',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Chin-Up.gif',muscle:'لاتس + بايسبس',equip:'عارضة',level:'مبتدئ',sets:'3',reps:'8-12',home:true,desc:'قبضة عكسية — أسهل وأكثر تفعيلاً للبايسبس.'},
+    {name:'دمبل رو',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Row.gif',muscle:'لاتس + وسط ظهر',equip:'دمبل + بنش',level:'مبتدئ',sets:'4',reps:'10-12',home:false,desc:'ضع ركبة ويد على البنش، اجذب الدمبل نحو الورك.'},
+    {name:'بار رو',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Bent-Over-Row.gif',muscle:'وسط الظهر',equip:'بار',level:'متوسط',sets:'4',reps:'8-12',home:false,desc:'انحنِ 45 درجة وجذب البار نحو البطن.'},
+    {name:'ديدليفت',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Deadlift.gif',muscle:'ظهر كامل + رجل',equip:'بار',level:'متقدم',sets:'4',reps:'5-8',home:false,desc:'ارفع البار من الأرض بظهر مستقيم.'},
+    {name:'سوبرمان',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Superman.gif',muscle:'ظهر سفلي',equip:'بدون',level:'مبتدئ',sets:'3',reps:'15',home:true,desc:'استلقِ على بطنك وارفع يديك وقدميك معاً.'},
+    {name:'بيرد دوج',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Bird-Dog.gif',muscle:'ظهر سفلي + كور',equip:'بدون',level:'مبتدئ',sets:'3',reps:'12',home:true,desc:'على أربع، مد ذراع ورجل معاكسين في آنٍ واحد.'},
+    {name:'لات بول داون',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Lat-Pulldown.gif',muscle:'لاتس',equip:'كيبل',level:'مبتدئ',sets:'4',reps:'12-15',home:false,desc:'اسحب الكيبل من الأعلى نحو الصدر.'},
+    {name:'سيتد كيبل رو',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Seated-Cable-Row.gif',muscle:'وسط الظهر',equip:'كيبل',level:'مبتدئ',sets:'4',reps:'12',home:false,desc:'اجلس وجذب الكيبل نحو البطن مع ضغط لوحي الكتف.'},
+    {name:'هايبر اكستنشن',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Hyperextension.gif',muscle:'ظهر سفلي',equip:'جهاز',level:'مبتدئ',sets:'3',reps:'15',home:false,desc:'يُقوّي الظهر السفلي ويحميه من الإصابات.'},
+    {name:'رو بمطاط',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Resistance-Band-Row.gif',muscle:'وسط الظهر',equip:'مطاط',level:'مبتدئ',sets:'3',reps:'15',home:true,desc:'داس على المطاط وجذبه نحو البطن.'},
+    {name:'فيس بول',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Face-Pull.gif',muscle:'ظهر علوي + كتف خلفي',equip:'كيبل',level:'مبتدئ',sets:'3',reps:'15',home:false,desc:'يُقوّي الظهر العلوي ويصحح الوضعية.'},
+  ]},
+  shoulders:{name:'الأكتاف',icon:'🏋️',exercises:[
+    {name:'دمبل شولدر برس',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Shoulder-Press.gif',muscle:'دلتا كامل',equip:'دمبل',level:'مبتدئ',sets:'4',reps:'10-12',home:false,desc:'ارفع الدمبل من مستوى الكتف للأعلى.'},
+    {name:'لاترال رايز',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Lateral-Raise.gif',muscle:'دلتا وسطي',equip:'دمبل',level:'مبتدئ',sets:'4',reps:'12-15',home:false,desc:'ارفع الدمبل للجانبين — يعطي الكتف عرضه.'},
+    {name:'فرونت رايز',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Front-Raise.gif',muscle:'دلتا أمامي',equip:'دمبل',level:'مبتدئ',sets:'3',reps:'12',home:false,desc:'ارفع الدمبل للأمام حتى مستوى الكتف.'},
+    {name:'ريفيرس فلاي',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Reverse-Fly.gif',muscle:'دلتا خلفي',equip:'دمبل',level:'مبتدئ',sets:'3',reps:'15',home:false,desc:'انحنِ وافتح الذراعين للخلف.'},
+    {name:'أرنولد برس',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Arnold-Press.gif',muscle:'دلتا كامل',equip:'دمبل',level:'متوسط',sets:'3',reps:'10-12',home:false,desc:'دوّر الدمبل أثناء الرفع لتفعيل كل أجزاء الكتف.'},
+    {name:'بايك بوش أب',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Pike-Push-Up.gif',muscle:'دلتا أمامي + وسطي',equip:'بدون',level:'مبتدئ',sets:'3',reps:'12',home:true,desc:'اثنِ جسمك كحرف V وانزل برأسك نحو الأرض.'},
+    {name:'شراق بدمبل',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Shrug.gif',muscle:'رقبة + كتف علوي',equip:'دمبل',level:'مبتدئ',sets:'4',reps:'15',home:false,desc:'ارفع كتفيك للأعلى نحو الأذنين.'},
+    {name:'أوفرهيد برس بالبار',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Overhead-Press.gif',muscle:'دلتا أمامي + وسطي',equip:'بار',level:'متوسط',sets:'4',reps:'8-10',home:false,desc:'ارفع البار من الصدر فوق الرأس.'},
+    {name:'هاندستاند بوش أب',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Handstand-Push-Up.gif',muscle:'دلتا كامل',equip:'جدار',level:'متقدم',sets:'3',reps:'6-10',home:true,desc:'الوقوف على اليدين بمساعدة الجدار ثم الضغط.'},
+    {name:'لاترال رايز بمطاط',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Lateral-Raise.gif',muscle:'دلتا وسطي',equip:'مطاط',level:'مبتدئ',sets:'3',reps:'15',home:true,desc:'استبدل الدمبل بمطاط المقاومة.'},
+    {name:'أبرايت رو',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Upright-Row.gif',muscle:'دلتا وسطي + رقبة',equip:'بار أو دمبل',level:'متوسط',sets:'3',reps:'12',home:false,desc:'اجذب البار نحو الذقن مع فتح الكوعين.'},
+    {name:'كيبل لاترال رايز',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Cable-Lateral-Raise.gif',muscle:'دلتا وسطي',equip:'كيبل',level:'مبتدئ',sets:'3',reps:'15',home:false,desc:'الكيبل يحافظ على التوتر طوال الحركة.'},
+  ]},
+  biceps:{name:'البايسبس',icon:'💪',exercises:[
+    {name:'بايسبس كيرل بالبار',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Curl.gif',muscle:'بايسبس كامل',equip:'بار',level:'مبتدئ',sets:'4',reps:'10-12',home:false,desc:'الأساس — اجذب البار نحو الصدر مع تثبيت الكوعين.'},
+    {name:'دمبل كيرل',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Curl.gif',muscle:'بايسبس',equip:'دمبل',level:'مبتدئ',sets:'3',reps:'12',home:false,desc:'كيرل بدمبل مع تناوب اليدين.'},
+    {name:'هامر كيرل',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Hammer-Curl.gif',muscle:'بايسبس + براكياليس',equip:'دمبل',level:'مبتدئ',sets:'3',reps:'12',home:false,desc:'القبضة عمودية — يُضخّم البايسبس ويُقوّي الساعد.'},
+    {name:'كونسنتريشن كيرل',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Concentration-Curl.gif',muscle:'قمة البايسبس',equip:'دمبل',level:'مبتدئ',sets:'3',reps:'12',home:false,desc:'ثبّت الكوع على الفخذ وركّز على الضغط في القمة.'},
+    {name:'إنكلاين دمبل كيرل',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Incline-Dumbbell-Curl.gif',muscle:'بايسبس طويل',equip:'دمبل + بنش مائل',level:'متوسط',sets:'3',reps:'10-12',home:false,desc:'الإمالة تمدّ البايسبس وتزيد مدى الحركة.'},
+    {name:'شين أب',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Chin-Up.gif',muscle:'بايسبس + لاتس',equip:'عارضة',level:'مبتدئ',sets:'3',reps:'8-12',home:true,desc:'أفضل تمرين منزلي للبايسبس.'},
+    {name:'كيبل كيرل',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Cable-Curl.gif',muscle:'بايسبس',equip:'كيبل',level:'مبتدئ',sets:'3',reps:'15',home:false,desc:'الكيبل يحافظ على التوتر في كل مدى الحركة.'},
+    {name:'بريتشر كيرل',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Preacher-Curl.gif',muscle:'بايسبس سفلي',equip:'بنش بريتشر + بار',level:'متوسط',sets:'3',reps:'10',home:false,desc:'يعزل البايسبس تماماً.'},
+    {name:'كيرل بمطاط',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Resistance-Band-Curl.gif',muscle:'بايسبس',equip:'مطاط',level:'مبتدئ',sets:'3',reps:'15',home:true,desc:'داس على المطاط وارفعه نحو الكتف.'},
+    {name:'ريفيرس كيرل',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Reverse-Curl.gif',muscle:'براكياليس + ساعد',equip:'بار',level:'متوسط',sets:'3',reps:'12',home:false,desc:'القبضة مقلوبة لاستهداف الساعد الخارجي.'},
+    {name:'كروس بودي هامر',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Cross-Body-Hammer-Curl.gif',muscle:'براكياليس',equip:'دمبل',level:'مبتدئ',sets:'3',reps:'12',home:false,desc:'ارفع الدمبل نحو الكتف المعاكس.'},
+    {name:'زوتمان كيرل',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Zottman-Curl.gif',muscle:'بايسبس + ساعد',equip:'دمبل',level:'متوسط',sets:'3',reps:'10',home:false,desc:'ارفع بقبضة عادية وانزل بقبضة عكسية.'},
+  ]},
+  triceps:{name:'الترايسبس',icon:'🦾',exercises:[
+    {name:'سكال كراشر',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Skull-Crusher.gif',muscle:'ترايسبس كامل',equip:'بار + بنش',level:'متوسط',sets:'4',reps:'10-12',home:false,desc:'ثبّت الكوعين واخفض البار نحو الجبهة.'},
+    {name:'ترايسبس بوش داون',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Triceps-Pushdown.gif',muscle:'ترايسبس',equip:'كيبل',level:'مبتدئ',sets:'4',reps:'12-15',home:false,desc:'ادفع الكيبل للأسفل مع تثبيت الكوعين.'},
+    {name:'ديبس',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Tricep-Dips.gif',muscle:'ترايسبس + صدر',equip:'أعمدة',level:'متوسط',sets:'4',reps:'10-15',home:false,desc:'انزل بين الأعمدة مع إبقاء الجسم عمودياً.'},
+    {name:'ديبس على الكرسي',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Bench-Dip.gif',muscle:'ترايسبس',equip:'كرسي',level:'مبتدئ',sets:'3',reps:'15',home:true,desc:'ضع يديك خلفك على الكرسي وانزل ببطء.'},
+    {name:'أوفرهيد ترايسبس',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Overhead-Tricep-Extension.gif',muscle:'ترايسبس طويل',equip:'دمبل',level:'مبتدئ',sets:'3',reps:'12',home:false,desc:'ارفع الدمبل فوق الرأس وانزل خلفه.'},
+    {name:'ضغط ضيق',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Close-Grip-Push-Up.gif',muscle:'ترايسبس + صدر',equip:'بدون',level:'مبتدئ',sets:'3',reps:'15',home:true,desc:'قرّب يديك في الضغط لتركيز الترايسبس.'},
+    {name:'كيك باك',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Kickback.gif',muscle:'ترايسبس',equip:'دمبل',level:'مبتدئ',sets:'3',reps:'15',home:false,desc:'انحنِ وادفع الدمبل للخلف حتى يستقيم الذراع.'},
+    {name:'رفعة فرنسية',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/French-Press.gif',muscle:'ترايسبس',equip:'بار EZ',level:'متوسط',sets:'3',reps:'10',home:false,desc:'حركة فوق الرأس لاستهداف الترايسبس الطويل.'},
+    {name:'وان آرم بوش داون',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/One-Arm-Pushdown.gif',muscle:'ترايسبس',equip:'كيبل',level:'مبتدئ',sets:'3',reps:'12',home:false,desc:'نفس البوش داون بيد واحدة للعزل.'},
+    {name:'ترايسبس بوش أب',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Diamond-Push-Up.gif',muscle:'ترايسبس',equip:'بدون',level:'مبتدئ',sets:'3',reps:'12',home:true,desc:'شكّل الماسة بيديك وادِّ الضغط.'},
+    {name:'كيبل أوفرهيد',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Cable-Overhead-Tricep-Extension.gif',muscle:'ترايسبس طويل',equip:'كيبل',level:'متوسط',sets:'3',reps:'12',home:false,desc:'ادفع الكيبل للأمام من فوق الرأس.'},
+    {name:'بودي ويت ديبس',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Bench-Dip.gif',muscle:'ترايسبس كامل',equip:'بدون',level:'متوسط',sets:'4',reps:'10',home:true,desc:'استخدم أي سطحين متساويين.'},
+  ]},
+  legs:{name:'الأرجل',icon:'🦵',exercises:[
+    {name:'سكوات',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Air-Squat.gif',muscle:'فخذ كامل',equip:'بدون',level:'مبتدئ',sets:'4',reps:'20',home:true,desc:'انزل حتى تتوازى الفخذ مع الأرض.'},
+    {name:'سكوات بالبار',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Squat.gif',muscle:'فخذ أمامي + مؤخرة',equip:'بار',level:'متوسط',sets:'4',reps:'8-12',home:false,desc:'ضع البار على الكتف وانزل بعمق.'},
+    {name:'لنج',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Lunge.gif',muscle:'فخذ أمامي + مؤخرة',equip:'بدون',level:'مبتدئ',sets:'3',reps:'12',home:true,desc:'خطوة للأمام مع انزال الركبة الخلفية.'},
+    {name:'ليج برس',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Leg-Press.gif',muscle:'فخذ كامل',equip:'جهاز',level:'مبتدئ',sets:'4',reps:'12-15',home:false,desc:'ادفع الوزن للأمام بقدميك.'},
+    {name:'ليج إكستنشن',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Leg-Extension.gif',muscle:'فخذ أمامي',equip:'جهاز',level:'مبتدئ',sets:'3',reps:'15',home:false,desc:'عزل الفخذ الأمامي بشكل مباشر.'},
+    {name:'ليج كيرل',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Leg-Curl.gif',muscle:'فخذ خلفي',equip:'جهاز',level:'مبتدئ',sets:'3',reps:'15',home:false,desc:'اجذب القدم نحو المؤخرة.'},
+    {name:'رومانيان ديدليفت',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Romanian-Deadlift.gif',muscle:'فخذ خلفي + ظهر سفلي',equip:'بار أو دمبل',level:'متوسط',sets:'4',reps:'10-12',home:false,desc:'انحنِ مع إبقاء الظهر مستقيماً.'},
+    {name:'كالف رايز',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Calf-Raise.gif',muscle:'ربلة الساق',equip:'بدون',level:'مبتدئ',sets:'4',reps:'25',home:true,desc:'ارفع كعبيك على أطراف أصابعك.'},
+    {name:'جلسة الكرسي',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Wall-Sit.gif',muscle:'فخذ أمامي',equip:'جدار',level:'مبتدئ',sets:'3',reps:'45 ثانية',home:true,desc:'استند بظهرك وثبّت وضعية الجلوس.'},
+    {name:'جامبينج سكوات',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Jump-Squat.gif',muscle:'فخذ كامل + كارديو',equip:'بدون',level:'متوسط',sets:'3',reps:'15',home:true,desc:'سكوات مع قفز في الأعلى.'},
+    {name:'بولغاريان سكوات',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Bulgarian-Split-Squat.gif',muscle:'فخذ أمامي',equip:'كرسي',level:'متقدم',sets:'3',reps:'10',home:true,desc:'ضع قدمك الخلفية على الكرسي وانزل.'},
+    {name:'ستيب أب',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Step-Up.gif',muscle:'فخذ + مؤخرة',equip:'درج أو كرسي',level:'مبتدئ',sets:'3',reps:'12',home:true,desc:'اصعد الدرجة بساق واحدة وعد للأسفل.'},
+  ]},
+  abs:{name:'البطن',icon:'🎯',exercises:[
+    {name:'كرنش',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Crunch.gif',muscle:'بطن علوي',equip:'بدون',level:'مبتدئ',sets:'4',reps:'20',home:true,desc:'ارفع كتفيك نحو الركبتين مع ضغط البطن.'},
+    {name:'بلانك',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Plank.gif',muscle:'كور كامل',equip:'بدون',level:'مبتدئ',sets:'3',reps:'45 ثانية',home:true,desc:'ثبّت جسمك بخط مستقيم.'},
+    {name:'ليج رايز',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Leg-Raise.gif',muscle:'بطن سفلي',equip:'بدون',level:'متوسط',sets:'4',reps:'15',home:true,desc:'ارفع الرجلين المستقيمتين من الأرض.'},
+    {name:'روسيان تويست',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Russian-Twist.gif',muscle:'جانب البطن',equip:'بدون',level:'متوسط',sets:'3',reps:'20',home:true,desc:'دوران للجانبين وأنت جالس بزاوية 45 درجة.'},
+    {name:'مانتين كلايمبر',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Mountain-Climber.gif',muscle:'كور + كارديو',equip:'بدون',level:'متوسط',sets:'3',reps:'30 ثانية',home:true,desc:'جري في مكانك بوضعية الضغط.'},
+    {name:'بايسيكل كرنش',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Bicycle-Crunch.gif',muscle:'بطن جانبي + علوي',equip:'بدون',level:'مبتدئ',sets:'3',reps:'20',home:true,desc:'كوع يمين مع ركبة يسار والعكس.'},
+    {name:'هانغينغ ليج رايز',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Hanging-Leg-Raise.gif',muscle:'بطن سفلي',equip:'عارضة',level:'متقدم',sets:'3',reps:'12',home:true,desc:'تعلّق وارفع ركبتيك أو رجليك.'},
+    {name:'سايد بلانك',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Side-Plank.gif',muscle:'جانب البطن',equip:'بدون',level:'مبتدئ',sets:'3',reps:'30 ثانية',home:true,desc:'بلانك على الجانب للخاصرة.'},
+    {name:'ديد باغ',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Dead-Bug.gif',muscle:'كور عميق',equip:'بدون',level:'متوسط',sets:'3',reps:'12',home:true,desc:'مد ذراع ورجل معاكسين وأنت مستلقٍ.'},
+    {name:'إيل فولد',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/V-Up.gif',muscle:'بطن كامل',equip:'بدون',level:'متقدم',sets:'3',reps:'10',home:true,desc:'ارفع الجذع والرجلين في آنٍ واحد.'},
+    {name:'كابل كرنش',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Cable-Crunch.gif',muscle:'بطن كامل',equip:'كيبل',level:'متوسط',sets:'3',reps:'15',home:false,desc:'اجذب الكيبل للأسفل مع ثني الجذع.'},
+    {name:'أب ويل',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Ab-Wheel-Rollout.gif',muscle:'كور كامل',equip:'عجلة بطن',level:'متقدم',sets:'3',reps:'10',home:true,desc:'تدحرج للأمام مع تثبيت الكور — الأصعب.'},
+  ]},
+  glutes:{name:'المؤخرة',icon:'🍑',exercises:[
+    {name:'هيب ثراست بدون وزن',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Hip-Thrust.gif',muscle:'مؤخرة',equip:'بدون',level:'مبتدئ',sets:'4',reps:'20',home:true,desc:'ضع الكتف على البنش وارفع الورك مع ضغط المؤخرة.'},
+    {name:'هيب ثراست بالبار',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Hip-Thrust.gif',muscle:'مؤخرة كاملة',equip:'بنش + بار',level:'متوسط',sets:'4',reps:'12-15',home:false,desc:'الأفضل لبناء المؤخرة.'},
+    {name:'غلوت بريدج',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Glute-Bridge.gif',muscle:'مؤخرة + فخذ خلفي',equip:'بدون',level:'مبتدئ',sets:'4',reps:'20',home:true,desc:'استلقِ وارفع وركيك مع ضغط المؤخرة.'},
+    {name:'كيك باك',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Donkey-Kick.gif',muscle:'مؤخرة',equip:'بدون',level:'مبتدئ',sets:'3',reps:'20',home:true,desc:'على أربع، ارفع الرجل للخلف مع ثني الركبة.'},
+    {name:'فاير هايدرانت',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Fire-Hydrant.gif',muscle:'جانب المؤخرة',equip:'بدون',level:'مبتدئ',sets:'3',reps:'20',home:true,desc:'على أربع، ارفع الركبة للجانب.'},
+    {name:'كلام شيل',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Clamshell.gif',muscle:'جانب المؤخرة',equip:'مطاط',level:'مبتدئ',sets:'3',reps:'20',home:true,desc:'استلقِ جانباً وافتح الركبة العليا.'},
+    {name:'سكوات سوما',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Sumo-Squat.gif',muscle:'مؤخرة + فخذ داخلي',equip:'بدون',level:'مبتدئ',sets:'3',reps:'20',home:true,desc:'وسّع القدمين وأشر أصابعهما للخارج.'},
+    {name:'سينغل ليج هيب ثراست',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Single-Leg-Hip-Thrust.gif',muscle:'مؤخرة',equip:'بدون',level:'متوسط',sets:'3',reps:'12',home:true,desc:'هيب ثراست برجل واحدة.'},
+    {name:'لنج رجوعي',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Reverse-Lunge.gif',muscle:'مؤخرة + فخذ',equip:'بدون',level:'مبتدئ',sets:'3',reps:'12',home:true,desc:'خطوة للخلف — يُركّز أكثر على المؤخرة.'},
+    {name:'ستيف ووكر',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Monster-Walk.gif',muscle:'مؤخرة + جانب فخذ',equip:'مطاط',level:'مبتدئ',sets:'3',reps:'15',home:true,desc:'ضع المطاط على الركبتين وامشِ جانبياً.'},
+    {name:'رومانيان ديدليفت بدمبل',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Romanian-Deadlift.gif',muscle:'مؤخرة + فخذ خلفي',equip:'دمبل',level:'متوسط',sets:'4',reps:'12',home:false,desc:'انحنِ مع إبقاء الظهر مستقيماً.'},
+    {name:'جامبينج سكوات',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Jump-Squat.gif',muscle:'مؤخرة + كارديو',equip:'بدون',level:'متوسط',sets:'3',reps:'15',home:true,desc:'سكوات مع قفز — يُحرق الدهون.'},
+  ]},
+  cardio:{name:'كارديو',icon:'🏃',exercises:[
+    {name:'جري في المكان',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Running-In-Place.gif',muscle:'كامل الجسم',equip:'بدون',level:'مبتدئ',sets:'3',reps:'1 دقيقة',home:true,desc:'ارفع ركبتيك بالتناوب وأنت في مكانك.'},
+    {name:'جامبينج جاكس',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Jumping-Jacks.gif',muscle:'كامل الجسم',equip:'بدون',level:'مبتدئ',sets:'3',reps:'30',home:true,desc:'افتح يديك وقدميك مع القفز.'},
+    {name:'بيربي',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Burpee.gif',muscle:'كامل الجسم',equip:'بدون',level:'متوسط',sets:'3',reps:'10',home:true,desc:'مزيج من الضغط والقفز — الأصعب كارديو.'},
+    {name:'هاي نيز',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/High-Knees.gif',muscle:'أرجل + كارديو',equip:'بدون',level:'مبتدئ',sets:'3',reps:'30 ثانية',home:true,desc:'ارفع ركبتيك لأعلى ما يمكن.'},
+    {name:'بات كيكس',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Butt-Kicks.gif',muscle:'فخذ خلفي + كارديو',equip:'بدون',level:'مبتدئ',sets:'3',reps:'30 ثانية',home:true,desc:'اجرِ مع رفع كعبيك نحو المؤخرة.'},
+    {name:'مانتين كلايمبر',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Mountain-Climber.gif',muscle:'كور + كارديو',equip:'بدون',level:'متوسط',sets:'3',reps:'30 ثانية',home:true,desc:'جري في وضعية الضغط.'},
+    {name:'سكيبينج',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Jump-Rope.gif',muscle:'كامل الجسم',equip:'حبل',level:'مبتدئ',sets:'3',reps:'1 دقيقة',home:true,desc:'القفز بالحبل — أفضل كارديو منزلي.'},
+    {name:'بوكس جامب',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Box-Jump.gif',muscle:'أرجل + كارديو',equip:'صندوق',level:'متوسط',sets:'3',reps:'10',home:false,desc:'اقفز على الصندوق بكلتا قدميك.'},
+    {name:'ستيبر',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Step-Up.gif',muscle:'أرجل + كارديو',equip:'درج',level:'مبتدئ',sets:'3',reps:'1 دقيقة',home:true,desc:'صعود وهبوط الدرج بسرعة.'},
+    {name:'جامبينج سكوات',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Jump-Squat.gif',muscle:'فخذ + كارديو',equip:'بدون',level:'متوسط',sets:'3',reps:'15',home:true,desc:'يحرق السعرات ويُقوّي الأرجل.'},
+    {name:'شادو بوكسينج',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Shadow-Boxing.gif',muscle:'كامل الجسم',equip:'بدون',level:'مبتدئ',sets:'3',reps:'2 دقيقة',home:true,desc:'لكمات ملاكمة في الهواء.'},
+    {name:'ستار جامب',img:'https://fitnessprogramer.com/wp-content/uploads/2021/02/Star-Jump.gif',muscle:'كامل الجسم',equip:'بدون',level:'متوسط',sets:'3',reps:'15',home:true,desc:'قفز مع فتح الذراعين والرجلين.'},
+  ]},
+};
+
+let activeMuscleCat=Object.keys(EXERCISES)[0];
+
+function renderExercises(){
+  const tabs=document.getElementById('muscle-tabs');
+  const content=document.getElementById('exercises-content');
+  tabs.innerHTML=Object.entries(EXERCISES).map(([k,v])=>
+    `<button class="muscle-tab ${k===activeMuscleCat?'active':''}" onclick="setMuscleCat('${k}',this)">${v.icon} ${v.name}</button>`
+  ).join('');
+  const cat=EXERCISES[activeMuscleCat];
+  const homeCount=cat.exercises.filter(e=>e.home).length;
+  content.innerHTML=`<div class="muscle-section">
+    <div class="muscle-header">
+      <span class="muscle-icon">${cat.icon}</span>
+      <span class="muscle-title">تمارين ${cat.name}</span>
+      <span class="muscle-count">${cat.exercises.length} تمرين</span>
+      ${homeCount?`<span class="home-badge">🏠 ${homeCount} منزلي</span>`:''}
+    </div>
+    <div class="exercises-grid">
+      ${cat.exercises.map(ex=>`<div class="ex-card">
+        <img class="ex-img" src="${ex.img}" alt="${ex.name}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
+        <div class="ex-img-placeholder" style="display:none">${cat.icon}</div>
+        <div class="ex-body">
+          <div class="ex-name">${ex.name}</div>
+          <div class="ex-tags">
+            <span class="ex-tag muscle">💪 ${ex.muscle}</span>
+            <span class="ex-tag equip">🏋️ ${ex.equip}</span>
+            <span class="ex-tag level">${ex.level==='مبتدئ'?'🟢':ex.level==='متوسط'?'🟡':'🔴'} ${ex.level}</span>
+            ${ex.home?'<span class="ex-tag home">🏠 منزلي</span>':''}
+          </div>
+          <div class="ex-desc">${ex.desc}</div>
+          <div class="ex-sets">
+            <div class="ex-set-item"><div class="ex-set-val">${ex.sets}</div><div class="ex-set-lbl">سيت</div></div>
+            <div class="ex-set-item"><div class="ex-set-val">${ex.reps}</div><div class="ex-set-lbl">تكرار</div></div>
+          </div>
+        </div>
+      </div>`).join('')}
+    </div>
+  </div>`;
+}
+
+function setMuscleCat(k,btn){
+  activeMuscleCat=k;
+  document.querySelectorAll('.muscle-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderExercises();
+}
+</script>
+</body>
+</html>
