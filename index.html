@@ -8,54 +8,81 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 html,body{height:100%;overflow:hidden;font-family:'Cairo',sans-serif;}
-.screen{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .4s,transform .4s;}
+ 
+.screen{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .35s,transform .35s;}
 .screen.hidden{opacity:0;pointer-events:none;transform:scale(.97);}
+ 
+/* ══ SPLASH ══ */
 #splash{background:#0a0a0a;padding:32px 24px;}
-#splash::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 20% 80%,rgba(255,60,0,.08) 0%,transparent 60%),radial-gradient(ellipse at 80% 20%,rgba(34,197,94,.06) 0%,transparent 60%);pointer-events:none;}
-.splash-logo{font-size:56px;margin-bottom:14px;animation:float 3s ease-in-out infinite;}
+#splash::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 20% 80%,rgba(255,60,0,.08),transparent 60%),radial-gradient(ellipse at 80% 20%,rgba(34,197,94,.06),transparent 60%);pointer-events:none;}
+.splash-logo{font-size:60px;margin-bottom:12px;animation:float 3s ease-in-out infinite;}
 @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
-.splash-title{font-family:'Tajawal',sans-serif;font-size:clamp(26px,5vw,38px);font-weight:900;color:#fff;margin-bottom:6px;}
-.splash-sub{font-size:14px;color:rgba(255,255,255,.35);margin-bottom:48px;}
-.splash-question{font-family:'Tajawal',sans-serif;font-size:clamp(18px,3.5vw,24px);font-weight:700;color:rgba(255,255,255,.8);margin-bottom:28px;text-align:center;}
-.choices{display:flex;flex-direction:column;gap:14px;width:100%;max-width:380px;}
-.choice{border-radius:20px;padding:20px 22px;cursor:pointer;display:flex;align-items:center;gap:16px;transition:all .2s;position:relative;overflow:hidden;}
+.splash-title{font-family:'Tajawal',sans-serif;font-size:clamp(26px,5vw,36px);font-weight:900;color:#fff;margin-bottom:5px;}
+.splash-sub{font-size:13px;color:rgba(255,255,255,.3);margin-bottom:44px;}
+.splash-q{font-family:'Tajawal',sans-serif;font-size:clamp(17px,3vw,22px);font-weight:700;color:rgba(255,255,255,.75);margin-bottom:24px;text-align:center;}
+.choices{display:flex;flex-direction:column;gap:12px;width:100%;max-width:380px;}
+.choice{border-radius:20px;padding:18px 20px;cursor:pointer;display:flex;align-items:center;gap:14px;transition:all .2s;}
 .choice-workout{background:linear-gradient(135deg,#1a0800,#200d00);border:1.5px solid rgba(255,80,0,.3);}
-.choice-workout:hover{border-color:rgba(255,80,0,.7);transform:translateX(-4px);box-shadow:0 8px 30px rgba(255,60,0,.2);}
+.choice-workout:hover{border-color:rgba(255,80,0,.7);transform:translateX(-4px);box-shadow:0 8px 28px rgba(255,60,0,.2);}
 .choice-calories{background:linear-gradient(135deg,#f0f7f0,#e8f5e8);border:1.5px solid rgba(34,197,94,.3);}
-.choice-calories:hover{border-color:rgba(34,197,94,.7);transform:translateX(-4px);box-shadow:0 8px 30px rgba(34,197,94,.2);}
-.choice-icon{font-size:38px;flex-shrink:0;}
+.choice-calories:hover{border-color:rgba(34,197,94,.7);transform:translateX(-4px);box-shadow:0 8px 28px rgba(34,197,94,.2);}
+.choice-icon{font-size:36px;flex-shrink:0;}
 .choice-text{flex:1;}
-.choice-title{font-family:'Tajawal',sans-serif;font-size:19px;font-weight:800;margin-bottom:3px;}
+.choice-title{font-family:'Tajawal',sans-serif;font-size:18px;font-weight:800;margin-bottom:3px;}
 .choice-workout .choice-title{color:#fff;}
 .choice-calories .choice-title{color:#1a1a1a;}
 .choice-desc{font-size:12px;}
 .choice-workout .choice-desc{color:rgba(255,150,80,.7);}
 .choice-calories .choice-desc{color:rgba(22,163,74,.7);}
 .choice-arrow{font-size:18px;transition:transform .2s;}
-.choice-workout .choice-arrow{color:rgba(255,80,0,.6);}
-.choice-calories .choice-arrow{color:rgba(34,197,94,.6);}
+.choice-workout .choice-arrow{color:rgba(255,80,0,.5);}
+.choice-calories .choice-arrow{color:rgba(34,197,94,.5);}
 .choice:hover .choice-arrow{transform:translateX(-5px);}
-#app-workout{background:#0d0d0d;flex-direction:column;justify-content:flex-start;overflow-y:auto;}
-#app-calories{background:#f5f0e8;flex-direction:column;justify-content:flex-start;overflow-y:auto;}
+ 
+/* ══ WORKOUT APP — داكن ناري ══ */
+#app-workout{
+  background:#0d0d0d;
+  flex-direction:column;
+  justify-content:flex-start;
+  overflow-y:auto;
+  align-items:stretch;
+}
+#app-workout::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 50% 100%,rgba(255,60,0,.07),transparent 60%);pointer-events:none;z-index:0;}
+ 
+/* ══ CALORIES APP — فاتح أخضر ══ */
+#app-calories{
+  background:#f5f0e8;
+  flex-direction:column;
+  justify-content:flex-start;
+  overflow-y:auto;
+  align-items:stretch;
+}
+#app-calories::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(34,197,94,.07),transparent 60%);pointer-events:none;z-index:0;}
+ 
+/* ══ APP NAV ══ */
 .app-nav{width:100%;display:flex;align-items:center;justify-content:space-between;padding:14px 18px;position:sticky;top:0;z-index:100;backdrop-filter:blur(14px);flex-shrink:0;}
-.app-nav.dark{background:rgba(13,13,13,.9);border-bottom:1px solid rgba(255,255,255,.06);}
-.app-nav.light{background:rgba(245,240,232,.9);border-bottom:1px solid rgba(0,0,0,.06);}
+.app-nav.dark{background:rgba(13,13,13,.92);border-bottom:1px solid rgba(255,255,255,.06);}
+.app-nav.light{background:rgba(245,240,232,.92);border-bottom:1px solid rgba(0,0,0,.06);}
 .back-btn{padding:7px 14px;border-radius:99px;font-family:'Cairo',sans-serif;font-size:12px;font-weight:700;cursor:pointer;border:none;transition:all .2s;display:flex;align-items:center;gap:5px;}
-.back-btn.dark{background:rgba(255,255,255,.08);color:rgba(255,255,255,.7);}
+.back-btn.dark{background:rgba(255,255,255,.08);color:rgba(255,255,255,.6);}
 .back-btn.dark:hover{background:rgba(255,255,255,.14);color:#fff;}
-.back-btn.light{background:rgba(0,0,0,.07);color:rgba(0,0,0,.6);}
-.back-btn.light:hover{background:rgba(0,0,0,.12);color:#000;}
-.app-nav-title{font-family:'Tajawal',sans-serif;font-size:15px;font-weight:800;}
+.back-btn.light{background:rgba(0,0,0,.07);color:rgba(0,0,0,.55);}
+.back-btn.light:hover{background:rgba(0,0,0,.13);color:#000;}
+.app-nav-title{font-family:'Tajawal',sans-serif;font-size:16px;font-weight:800;}
 .app-nav.dark .app-nav-title{color:#fff;}
 .app-nav.light .app-nav-title{color:#1a1a1a;}
-.app-content{flex:1;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px;text-align:center;}
-.placeholder-icon{font-size:64px;margin-bottom:16px;}
-.placeholder-title{font-family:'Tajawal',sans-serif;font-size:24px;font-weight:800;margin-bottom:8px;}
-.dark-text{color:#fff;}.light-text{color:#1a1a1a;}
-.placeholder-sub{font-size:13px;line-height:1.7;}
-.dark-sub{color:rgba(255,255,255,.35);}
-.light-sub{color:rgba(0,0,0,.35);}
-@keyframes slideUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+ 
+/* ══ APP PLACEHOLDER CONTENT ══ */
+.app-body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px;position:relative;z-index:1;text-align:center;min-height:calc(100vh - 56px);}
+.ph-icon{font-size:64px;margin-bottom:16px;}
+.ph-title{font-family:'Tajawal',sans-serif;font-size:24px;font-weight:800;margin-bottom:8px;}
+.ph-sub{font-size:13px;line-height:1.8;opacity:.4;}
+#app-workout .ph-title{color:#fff;}
+#app-workout .ph-sub{color:#fff;}
+#app-calories .ph-title{color:#1a1a1a;}
+#app-calories .ph-sub{color:#000;}
+ 
+@keyframes slideUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
 .a1{animation:slideUp .4s .0s both}
 .a2{animation:slideUp .4s .1s both}
 .a3{animation:slideUp .4s .2s both}
@@ -64,11 +91,12 @@ html,body{height:100%;overflow:hidden;font-family:'Cairo',sans-serif;}
 </head>
 <body>
  
+<!-- ══ SPLASH ══ -->
 <div class="screen" id="splash">
   <div class="splash-logo a1">🏅</div>
   <div class="splash-title a2">المدرب الشخصي</div>
   <div class="splash-sub a2">رفيقك اليومي للصحة واللياقة</div>
-  <div class="splash-question a3">وش حاب تسوي اليوم؟</div>
+  <div class="splash-q a3">وش حاب تسوي اليوم؟</div>
   <div class="choices a4">
     <div class="choice choice-workout" onclick="openApp('workout')">
       <span class="choice-icon">🔥</span>
@@ -89,29 +117,31 @@ html,body{height:100%;overflow:hidden;font-family:'Cairo',sans-serif;}
   </div>
 </div>
  
+<!-- ══ WORKOUT APP ══ -->
 <div class="screen hidden" id="app-workout">
   <nav class="app-nav dark">
     <button class="back-btn dark" onclick="goBack()">← رجوع</button>
-    <span class="app-nav-title">التمرين</span>
-    <span>🔥</span>
+    <span class="app-nav-title">التمرين 🔥</span>
+    <span style="width:60px"></span>
   </nav>
-  <div class="app-content">
-    <div class="placeholder-icon">💪</div>
-    <div class="placeholder-title dark-text">تطبيق التمرين</div>
-    <div class="placeholder-sub dark-sub">هنا سيُبنى تطبيق التمرين<br/>خطوة بخطوة ✅</div>
+  <div class="app-body">
+    <div class="ph-icon">💪</div>
+    <div class="ph-title">تطبيق التمرين</div>
+    <div class="ph-sub">هنا سيُبنى تطبيق التمرين<br/>خطوة بخطوة ✅</div>
   </div>
 </div>
  
+<!-- ══ CALORIES APP ══ -->
 <div class="screen hidden" id="app-calories">
   <nav class="app-nav light">
     <button class="back-btn light" onclick="goBack()">← رجوع</button>
-    <span class="app-nav-title">السعرات</span>
-    <span>🥗</span>
+    <span class="app-nav-title">السعرات 🥗</span>
+    <span style="width:60px"></span>
   </nav>
-  <div class="app-content">
-    <div class="placeholder-icon">🍽️</div>
-    <div class="placeholder-title light-text">تطبيق السعرات</div>
-    <div class="placeholder-sub light-sub">هنا سيُبنى تطبيق السعرات<br/>خطوة بخطوة ✅</div>
+  <div class="app-body">
+    <div class="ph-icon">🍽️</div>
+    <div class="ph-title">تطبيق السعرات</div>
+    <div class="ph-sub">هنا سيُبنى تطبيق السعرات<br/>خطوة بخطوة ✅</div>
   </div>
 </div>
  
