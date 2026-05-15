@@ -7,7 +7,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;700;800;900&family=Cairo:wght@400;600;700&display=swap" rel="stylesheet"/>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
-html,body{height:100%;overflow:hidden;font-family:'Cairo',sans-serif;}
+html,body{height:100%;overflow:hidden;font-family:'Cairo',sans-serif;-webkit-tap-highlight-color:transparent;}
+input,button,select{font-family:inherit;outline:none;}
  
 .screen{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .35s,transform .35s;}
 .screen.hidden{opacity:0;pointer-events:none;transform:scale(.97);}
@@ -18,8 +19,59 @@ html,body{height:100%;overflow:hidden;font-family:'Cairo',sans-serif;}
 .splash-logo{font-size:60px;margin-bottom:12px;animation:float 3s ease-in-out infinite;}
 @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
 .splash-title{font-family:'Tajawal',sans-serif;font-size:clamp(26px,5vw,36px);font-weight:900;color:#fff;margin-bottom:5px;}
-.splash-sub{font-size:13px;color:rgba(255,255,255,.3);margin-bottom:44px;}
-.splash-q{font-family:'Tajawal',sans-serif;font-size:clamp(17px,3vw,22px);font-weight:700;color:rgba(255,255,255,.75);margin-bottom:24px;text-align:center;}
+.splash-sub{font-size:13px;color:rgba(255,255,255,.3);margin-bottom:36px;}
+.splash-welcome{font-family:'Tajawal',sans-serif;font-size:clamp(15px,2.8vw,18px);color:rgba(255,255,255,.55);text-align:center;max-width:340px;line-height:1.8;margin-bottom:28px;}
+.start-btn{background:linear-gradient(135deg,#ff5722,#ff3c00);color:#fff;border:none;padding:16px 48px;border-radius:99px;font-family:'Tajawal',sans-serif;font-size:17px;font-weight:800;cursor:pointer;box-shadow:0 8px 28px rgba(255,60,0,.35);transition:all .2s;}
+.start-btn:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(255,60,0,.45);}
+.start-btn:active{transform:translateY(0);}
+ 
+/* ══ ONBOARDING ══ */
+#onboarding{background:#0a0a0a;padding:0;align-items:stretch;justify-content:flex-start;}
+#onboarding::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 100%,rgba(255,60,0,.08),transparent 60%);pointer-events:none;}
+ 
+.ob-header{display:flex;align-items:center;gap:14px;padding:18px 20px 8px;position:relative;z-index:2;}
+.ob-back{background:rgba(255,255,255,.08);border:none;color:rgba(255,255,255,.7);width:38px;height:38px;border-radius:50%;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;}
+.ob-back:hover{background:rgba(255,255,255,.14);color:#fff;}
+.ob-back:disabled{opacity:.3;cursor:not-allowed;}
+.ob-progress{flex:1;height:6px;background:rgba(255,255,255,.08);border-radius:99px;overflow:hidden;}
+.ob-progress-bar{height:100%;background:linear-gradient(90deg,#ff5722,#ff3c00);border-radius:99px;transition:width .4s ease;width:0%;}
+.ob-step{font-size:11px;color:rgba(255,255,255,.4);font-weight:700;letter-spacing:.5px;flex-shrink:0;}
+ 
+.ob-body{flex:1;display:flex;flex-direction:column;justify-content:center;padding:20px 28px 40px;position:relative;z-index:2;overflow-y:auto;}
+.ob-q-num{font-size:13px;color:rgba(255,87,34,.9);font-weight:700;margin-bottom:10px;font-family:'Tajawal',sans-serif;}
+.ob-q-title{font-family:'Tajawal',sans-serif;font-size:clamp(22px,4.5vw,30px);font-weight:800;color:#fff;margin-bottom:8px;line-height:1.4;}
+.ob-q-hint{font-size:13px;color:rgba(255,255,255,.4);margin-bottom:32px;line-height:1.7;}
+ 
+.ob-input{width:100%;background:rgba(255,255,255,.05);border:1.5px solid rgba(255,255,255,.1);border-radius:16px;padding:18px 20px;font-size:18px;color:#fff;font-weight:600;transition:all .2s;text-align:right;}
+.ob-input::placeholder{color:rgba(255,255,255,.25);font-weight:400;}
+.ob-input:focus{border-color:rgba(255,87,34,.6);background:rgba(255,255,255,.07);box-shadow:0 0 0 4px rgba(255,87,34,.08);}
+ 
+.ob-input-wrap{position:relative;}
+.ob-unit{position:absolute;left:18px;top:50%;transform:translateY(-50%);color:rgba(255,255,255,.35);font-size:14px;font-weight:600;pointer-events:none;}
+ 
+.ob-options{display:flex;flex-direction:column;gap:12px;}
+.ob-opt{background:rgba(255,255,255,.05);border:1.5px solid rgba(255,255,255,.1);border-radius:16px;padding:18px 20px;cursor:pointer;display:flex;align-items:center;gap:14px;transition:all .2s;text-align:right;color:#fff;font-size:16px;font-weight:700;font-family:'Cairo',sans-serif;}
+.ob-opt:hover{border-color:rgba(255,87,34,.4);background:rgba(255,255,255,.07);}
+.ob-opt.selected{border-color:#ff5722;background:rgba(255,87,34,.1);box-shadow:0 0 0 4px rgba(255,87,34,.08);}
+.ob-opt-icon{font-size:28px;flex-shrink:0;}
+.ob-opt-text{flex:1;}
+.ob-opt-title{font-size:16px;font-weight:800;margin-bottom:2px;font-family:'Tajawal',sans-serif;}
+.ob-opt-desc{font-size:12px;color:rgba(255,255,255,.5);font-weight:400;}
+ 
+.ob-footer{padding:16px 28px 28px;position:relative;z-index:2;}
+.ob-next{width:100%;background:linear-gradient(135deg,#ff5722,#ff3c00);color:#fff;border:none;padding:17px;border-radius:16px;font-family:'Tajawal',sans-serif;font-size:17px;font-weight:800;cursor:pointer;transition:all .2s;box-shadow:0 6px 22px rgba(255,60,0,.3);}
+.ob-next:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 10px 28px rgba(255,60,0,.4);}
+.ob-next:disabled{opacity:.35;cursor:not-allowed;box-shadow:none;}
+ 
+.ob-error{color:#ff6b6b;font-size:12px;margin-top:8px;display:none;}
+.ob-error.show{display:block;}
+ 
+/* ══ HOME (الخيارين) ══ */
+#home{background:#0a0a0a;padding:32px 24px;}
+#home::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 20% 80%,rgba(255,60,0,.08),transparent 60%),radial-gradient(ellipse at 80% 20%,rgba(34,197,94,.06),transparent 60%);pointer-events:none;}
+.home-greeting{font-family:'Tajawal',sans-serif;font-size:14px;color:rgba(255,255,255,.5);margin-bottom:6px;}
+.home-name{font-family:'Tajawal',sans-serif;font-size:clamp(24px,5vw,32px);font-weight:900;color:#fff;margin-bottom:36px;}
+.home-q{font-family:'Tajawal',sans-serif;font-size:clamp(17px,3vw,22px);font-weight:700;color:rgba(255,255,255,.75);margin-bottom:24px;text-align:center;}
 .choices{display:flex;flex-direction:column;gap:12px;width:100%;max-width:380px;}
 .choice{border-radius:20px;padding:18px 20px;cursor:pointer;display:flex;align-items:center;gap:14px;transition:all .2s;}
 .choice-workout{background:linear-gradient(135deg,#1a0800,#200d00);border:1.5px solid rgba(255,80,0,.3);}
@@ -39,27 +91,17 @@ html,body{height:100%;overflow:hidden;font-family:'Cairo',sans-serif;}
 .choice-calories .choice-arrow{color:rgba(34,197,94,.5);}
 .choice:hover .choice-arrow{transform:translateX(-5px);}
  
-/* ══ WORKOUT APP — داكن ناري ══ */
-#app-workout{
-  background:#0d0d0d;
-  flex-direction:column;
-  justify-content:flex-start;
-  overflow-y:auto;
-  align-items:stretch;
-}
+.edit-profile{margin-top:24px;background:none;border:none;color:rgba(255,255,255,.4);font-size:12px;cursor:pointer;font-family:'Cairo',sans-serif;text-decoration:underline;text-underline-offset:3px;}
+.edit-profile:hover{color:rgba(255,255,255,.7);}
+ 
+/* ══ WORKOUT APP ══ */
+#app-workout{background:#0d0d0d;flex-direction:column;justify-content:flex-start;overflow-y:auto;align-items:stretch;}
 #app-workout::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 50% 100%,rgba(255,60,0,.07),transparent 60%);pointer-events:none;z-index:0;}
  
-/* ══ CALORIES APP — فاتح أخضر ══ */
-#app-calories{
-  background:#f5f0e8;
-  flex-direction:column;
-  justify-content:flex-start;
-  overflow-y:auto;
-  align-items:stretch;
-}
+/* ══ CALORIES APP ══ */
+#app-calories{background:#f5f0e8;flex-direction:column;justify-content:flex-start;overflow-y:auto;align-items:stretch;}
 #app-calories::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(34,197,94,.07),transparent 60%);pointer-events:none;z-index:0;}
  
-/* ══ APP NAV ══ */
 .app-nav{width:100%;display:flex;align-items:center;justify-content:space-between;padding:14px 18px;position:sticky;top:0;z-index:100;backdrop-filter:blur(14px);flex-shrink:0;}
 .app-nav.dark{background:rgba(13,13,13,.92);border-bottom:1px solid rgba(255,255,255,.06);}
 .app-nav.light{background:rgba(245,240,232,.92);border-bottom:1px solid rgba(0,0,0,.06);}
@@ -72,7 +114,6 @@ html,body{height:100%;overflow:hidden;font-family:'Cairo',sans-serif;}
 .app-nav.dark .app-nav-title{color:#fff;}
 .app-nav.light .app-nav-title{color:#1a1a1a;}
  
-/* ══ APP PLACEHOLDER CONTENT ══ */
 .app-body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px;position:relative;z-index:1;text-align:center;min-height:calc(100vh - 56px);}
 .ph-icon{font-size:64px;margin-bottom:16px;}
 .ph-title{font-family:'Tajawal',sans-serif;font-size:24px;font-weight:800;margin-bottom:8px;}
@@ -83,10 +124,17 @@ html,body{height:100%;overflow:hidden;font-family:'Cairo',sans-serif;}
 #app-calories .ph-sub{color:#000;}
  
 @keyframes slideUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideInQ{from{opacity:0;transform:translateX(-20px)}to{opacity:1;transform:translateX(0)}}
 .a1{animation:slideUp .4s .0s both}
 .a2{animation:slideUp .4s .1s both}
 .a3{animation:slideUp .4s .2s both}
 .a4{animation:slideUp .4s .3s both}
+.q-anim{animation:slideInQ .35s ease both;}
+ 
+/* ══ تخفي الأسهم في input number ══ */
+.ob-input[type="number"]::-webkit-inner-spin-button,
+.ob-input[type="number"]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0;}
+.ob-input[type="number"]{-moz-appearance:textfield;}
 </style>
 </head>
 <body>
@@ -96,7 +144,30 @@ html,body{height:100%;overflow:hidden;font-family:'Cairo',sans-serif;}
   <div class="splash-logo a1">🏅</div>
   <div class="splash-title a2">المدرب الشخصي</div>
   <div class="splash-sub a2">رفيقك اليومي للصحة واللياقة</div>
-  <div class="splash-q a3">وش حاب تسوي اليوم؟</div>
+  <div class="splash-welcome a3">أهلاً بك 👋<br/>قبل ما نبدأ، نحتاج نتعرف عليك<br/>عشان نقدّم لك تجربة مفصّلة لك</div>
+  <button class="start-btn a4" onclick="startOnboarding()">يلا نبدأ ←</button>
+</div>
+ 
+<!-- ══ ONBOARDING ══ -->
+<div class="screen hidden" id="onboarding">
+  <div class="ob-header">
+    <button class="ob-back" id="obBack" onclick="prevStep()">→</button>
+    <div class="ob-progress"><div class="ob-progress-bar" id="obProgress"></div></div>
+    <span class="ob-step" id="obStepText">1/7</span>
+  </div>
+  <div class="ob-body" id="obBody">
+    <!-- يُحقن المحتوى ديناميكياً -->
+  </div>
+  <div class="ob-footer">
+    <button class="ob-next" id="obNext" onclick="nextStep()" disabled>التالي ←</button>
+  </div>
+</div>
+ 
+<!-- ══ HOME (الخيارين) ══ -->
+<div class="screen hidden" id="home">
+  <div class="home-greeting a1">أهلاً بك 👋</div>
+  <div class="home-name a2" id="homeName">صديقي</div>
+  <div class="home-q a3">وش حاب تسوي اليوم؟</div>
   <div class="choices a4">
     <div class="choice choice-workout" onclick="openApp('workout')">
       <span class="choice-icon">🔥</span>
@@ -115,12 +186,13 @@ html,body{height:100%;overflow:hidden;font-family:'Cairo',sans-serif;}
       <span class="choice-arrow">←</span>
     </div>
   </div>
+  <button class="edit-profile" onclick="editProfile()">تعديل بياناتي</button>
 </div>
  
 <!-- ══ WORKOUT APP ══ -->
 <div class="screen hidden" id="app-workout">
   <nav class="app-nav dark">
-    <button class="back-btn dark" onclick="goBack()">← رجوع</button>
+    <button class="back-btn dark" onclick="goHome()">← رجوع</button>
     <span class="app-nav-title">التمرين 🔥</span>
     <span style="width:60px"></span>
   </nav>
@@ -134,7 +206,7 @@ html,body{height:100%;overflow:hidden;font-family:'Cairo',sans-serif;}
 <!-- ══ CALORIES APP ══ -->
 <div class="screen hidden" id="app-calories">
   <nav class="app-nav light">
-    <button class="back-btn light" onclick="goBack()">← رجوع</button>
+    <button class="back-btn light" onclick="goHome()">← رجوع</button>
     <span class="app-nav-title">السعرات 🥗</span>
     <span style="width:60px"></span>
   </nav>
@@ -146,14 +218,238 @@ html,body{height:100%;overflow:hidden;font-family:'Cairo',sans-serif;}
 </div>
  
 <script>
-function openApp(t){
+// ══ STATE ══
+const STORAGE_KEY = 'personalTrainer_userData';
+let userData = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+let currentStep = 0;
+ 
+// ══ STEPS DEFINITION ══
+const steps = [
+  {
+    key: 'name',
+    qNum: 'السؤال 1 من 7',
+    title: 'وش اسمك؟',
+    hint: 'بنناديك فيه عشان نحفّزك ونتابع تقدّمك',
+    type: 'text',
+    placeholder: 'اكتب اسمك هنا',
+    validate: v => v && v.trim().length >= 2
+  },
+  {
+    key: 'gender',
+    qNum: 'السؤال 2 من 7',
+    title: 'جنسك؟',
+    hint: 'نحتاجها لحساب احتياجك من السعرات بدقة',
+    type: 'options',
+    options: [
+      { value: 'male', icon: '👨', title: 'ذكر', desc: '' },
+      { value: 'female', icon: '👩', title: 'أنثى', desc: '' }
+    ],
+    validate: v => v === 'male' || v === 'female'
+  },
+  {
+    key: 'age',
+    qNum: 'السؤال 3 من 7',
+    title: 'كم عمرك؟',
+    hint: 'العمر يؤثر على معدل الأيض',
+    type: 'number',
+    placeholder: '25',
+    unit: 'سنة',
+    min: 10, max: 100,
+    validate: v => v >= 10 && v <= 100
+  },
+  {
+    key: 'height',
+    qNum: 'السؤال 4 من 7',
+    title: 'كم طولك؟',
+    hint: 'بالسنتيمتر',
+    type: 'number',
+    placeholder: '170',
+    unit: 'سم',
+    min: 100, max: 250,
+    validate: v => v >= 100 && v <= 250
+  },
+  {
+    key: 'weight',
+    qNum: 'السؤال 5 من 7',
+    title: 'كم وزنك الحالي؟',
+    hint: 'بالكيلوجرام · كن صادقاً مع نفسك 💪',
+    type: 'number',
+    placeholder: '70',
+    unit: 'كجم',
+    min: 30, max: 300,
+    validate: v => v >= 30 && v <= 300
+  },
+  {
+    key: 'targetWeight',
+    qNum: 'السؤال 6 من 7',
+    title: 'وش وزنك المستهدف؟',
+    hint: 'الوزن اللي تتمنى توصله',
+    type: 'number',
+    placeholder: '65',
+    unit: 'كجم',
+    min: 30, max: 300,
+    validate: v => v >= 30 && v <= 300
+  },
+  {
+    key: 'activity',
+    qNum: 'السؤال 7 من 7',
+    title: 'مستوى نشاطك الأسبوعي؟',
+    hint: 'يشمل التمرين والحركة اليومية',
+    type: 'options',
+    options: [
+      { value: 'low', icon: '🪑', title: 'قليل', desc: 'مكتبي · حركة قليلة · تمرين 0-1 أيام/أسبوع' },
+      { value: 'medium', icon: '🚶', title: 'متوسط', desc: 'حركة معتدلة · تمرين 2-4 أيام/أسبوع' },
+      { value: 'high', icon: '🏃', title: 'عالي', desc: 'نشط جداً · تمرين 5+ أيام/أسبوع' }
+    ],
+    validate: v => ['low','medium','high'].includes(v)
+  }
+];
+ 
+// ══ NAVIGATION ══
+function startOnboarding(){
   document.getElementById('splash').classList.add('hidden');
+  document.getElementById('onboarding').classList.remove('hidden');
+  currentStep = 0;
+  renderStep();
+}
+ 
+function renderStep(){
+  const step = steps[currentStep];
+  const total = steps.length;
+  
+  // Update progress
+  document.getElementById('obProgress').style.width = ((currentStep+1)/total*100)+'%';
+  document.getElementById('obStepText').textContent = (currentStep+1)+'/'+total;
+  document.getElementById('obBack').disabled = currentStep === 0;
+  
+  // Build content
+  let html = '<div class="q-anim">';
+  html += `<div class="ob-q-num">${step.qNum}</div>`;
+  html += `<div class="ob-q-title">${step.title}</div>`;
+  html += `<div class="ob-q-hint">${step.hint}</div>`;
+  
+  const savedValue = userData[step.key];
+  
+  if(step.type === 'text'){
+    html += `<input type="text" class="ob-input" id="obInput" placeholder="${step.placeholder}" value="${savedValue||''}" />`;
+  } else if(step.type === 'number'){
+    html += '<div class="ob-input-wrap">';
+    html += `<input type="number" inputmode="numeric" class="ob-input" id="obInput" placeholder="${step.placeholder}" min="${step.min}" max="${step.max}" value="${savedValue||''}" />`;
+    html += `<span class="ob-unit">${step.unit}</span>`;
+    html += '</div>';
+  } else if(step.type === 'options'){
+    html += '<div class="ob-options" id="obOptions">';
+    step.options.forEach(opt => {
+      const sel = savedValue === opt.value ? ' selected' : '';
+      html += `<div class="ob-opt${sel}" data-value="${opt.value}" onclick="selectOption(this)">`;
+      html += `<span class="ob-opt-icon">${opt.icon}</span>`;
+      html += `<div class="ob-opt-text"><div class="ob-opt-title">${opt.title}</div>`;
+      if(opt.desc) html += `<div class="ob-opt-desc">${opt.desc}</div>`;
+      html += `</div></div>`;
+    });
+    html += '</div>';
+  }
+  
+  html += '</div>';
+  document.getElementById('obBody').innerHTML = html;
+  
+  // Setup input listener
+  const input = document.getElementById('obInput');
+  if(input){
+    input.addEventListener('input', updateNextButton);
+    input.addEventListener('keydown', e => {
+      if(e.key === 'Enter' && !document.getElementById('obNext').disabled){
+        nextStep();
+      }
+    });
+    setTimeout(()=>input.focus(), 100);
+  }
+  
+  // Update button label
+  const nextBtn = document.getElementById('obNext');
+  nextBtn.textContent = currentStep === total-1 ? 'يلا نبدأ 🚀' : 'التالي ←';
+  
+  updateNextButton();
+}
+ 
+function selectOption(el){
+  const step = steps[currentStep];
+  document.querySelectorAll('.ob-opt').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  userData[step.key] = el.dataset.value;
+  updateNextButton();
+}
+ 
+function updateNextButton(){
+  const step = steps[currentStep];
+  let value;
+  if(step.type === 'options'){
+    value = userData[step.key];
+  } else {
+    const input = document.getElementById('obInput');
+    value = input ? (step.type === 'number' ? parseFloat(input.value) : input.value) : null;
+  }
+  document.getElementById('obNext').disabled = !step.validate(value);
+}
+ 
+function nextStep(){
+  const step = steps[currentStep];
+  // Save current
+  if(step.type !== 'options'){
+    const input = document.getElementById('obInput');
+    userData[step.key] = step.type === 'number' ? parseFloat(input.value) : input.value.trim();
+  }
+  
+  if(currentStep < steps.length - 1){
+    currentStep++;
+    renderStep();
+  } else {
+    // Finish onboarding
+    finishOnboarding();
+  }
+}
+ 
+function prevStep(){
+  if(currentStep > 0){
+    currentStep--;
+    renderStep();
+  }
+}
+ 
+function finishOnboarding(){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(userData));
+  document.getElementById('onboarding').classList.add('hidden');
+  document.getElementById('homeName').textContent = userData.name || 'صديقي';
+  document.getElementById('home').classList.remove('hidden');
+}
+ 
+function editProfile(){
+  currentStep = 0;
+  document.getElementById('home').classList.add('hidden');
+  document.getElementById('onboarding').classList.remove('hidden');
+  renderStep();
+}
+ 
+function openApp(t){
+  document.getElementById('home').classList.add('hidden');
   document.getElementById('app-'+t).classList.remove('hidden');
 }
-function goBack(){
+ 
+function goHome(){
   document.querySelectorAll('.screen').forEach(s=>s.classList.add('hidden'));
-  document.getElementById('splash').classList.remove('hidden');
+  document.getElementById('homeName').textContent = userData.name || 'صديقي';
+  document.getElementById('home').classList.remove('hidden');
 }
+ 
+// ══ INIT ══
+// إذا البيانات محفوظة سابقاً، نروح للهوم مباشرة
+window.addEventListener('DOMContentLoaded', () => {
+  if(userData.name && userData.activity){
+    document.getElementById('splash').classList.add('hidden');
+    document.getElementById('homeName').textContent = userData.name;
+    document.getElementById('home').classList.remove('hidden');
+  }
+});
 </script>
 </body>
 </html>
